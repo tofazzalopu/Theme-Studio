@@ -1,4 +1,4 @@
-# Instant Theme Changer 🎨
+# Theme Studio 🎨
 
 A secure, ultra-lightweight theme manager for Chromium-based browsers (Chrome, Edge, Brave, Opera) featuring an **Apple-crafted UI** and native browser appearance integration.
 
@@ -76,7 +76,7 @@ Inspired by the reference design:
    ```
    E:\AI Class\Instant Theme Changer\extension
    ```
-6. The **Instant Theme Changer** icon will appear in your extensions bar! Click it to open the Theme Gallery.
+6. The **Theme Studio** icon will appear in your extensions bar! Click it to open the Theme Gallery.
 
 ---
 

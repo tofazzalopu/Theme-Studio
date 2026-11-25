@@ -1,5 +1,5 @@
 /**
- * Instant Theme Changer - Background Service Worker
+ * Theme Studio - Background Service Worker
  * Handles Chrome Alarms scheduling, native Chromium theme switching,
  * Live Companion folder overwrite, and real-time ThemeStudioDB updates.
  */

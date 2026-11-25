@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Instant Theme Changer",
+  "name": "Theme Studio",
   "version": "1.0.0",
   "description": "Secure, ultra-lightweight theme manager with Apple-inspired UI and native Chromium appearance integration.",
   "permissions": [
@@ -36,7 +36,7 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "Instant Theme Changer"
+    "default_title": "Theme Studio"
   },
   "web_accessible_resources": [
     {

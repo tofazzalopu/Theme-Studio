@@ -1,5 +1,5 @@
 /**
- * Shared Utilities for Instant Theme Changer
+ * Shared Utilities for Theme Studio
  * Safe for both DOM pages (popup, canvas, companion) and MV3 Service Worker.
  */
 

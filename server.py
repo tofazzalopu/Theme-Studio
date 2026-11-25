@@ -58,7 +58,7 @@ class ExtensionDevHandler(http.server.SimpleHTTPRequestHandler):
 
 def run():
     with ThreadedTCPServer(("127.0.0.1", PORT), ExtensionDevHandler) as httpd:
-        print(f"\nInstant Theme Changer -> http://127.0.0.1:{PORT}/popup/popup.html\n")
+        print(f"\nTheme Studio -> http://127.0.0.1:{PORT}/popup/popup.html\n")
         sys.stdout.flush()
         try:
             httpd.serve_forever()

@@ -1,16 +1,16 @@
-# Privacy Policy for Instant Theme Changer
+# Privacy Policy for Theme Studio
 
 **Last Updated:** November 25, 2026
 
 ## 1. Overview
-**Instant Theme Changer** ("we", "our", or "the extension") is a lightweight, privacy-first browser personalization extension built for Chromium-based browsers (Google Chrome, Microsoft Edge, Brave, etc.).
+**Theme Studio** ("we", "our", or "the extension") is a lightweight, privacy-first browser personalization extension built for Chromium-based browsers (Google Chrome, Microsoft Edge, Brave, etc.).
 
 We believe your browser appearance, wallpapers, and settings belong exclusively to you. This Privacy Policy explains how data and browser permissions are handled entirely on your local device.
 
 ---
 
 ## 2. No Personal Data Collection
-**Instant Theme Changer does not collect, harvest, monitor, or transmit any personal information or browsing data off your device.**
+**Theme Studio does not collect, harvest, monitor, or transmit any personal information or browsing data off your device.**
 
 Specifically, we **do not**:
 - Collect personally identifiable information (names, email addresses, IP addresses, etc.)
@@ -83,6 +83,6 @@ If this Privacy Policy is updated to reflect new capabilities, the **Last Update
 ---
 
 ## 9. Contact
-- **Project:** Instant Theme Changer
-- **Support / Issues:** [GitHub Issues](https://github.com/)
+- **Project:** Theme Studio
+- **Support / Issues:** [GitHub Issues](https://github.com/tofazzalopu/Theme-Studio/issues)
 - **Contact:** `support@instantthemechanger.local`

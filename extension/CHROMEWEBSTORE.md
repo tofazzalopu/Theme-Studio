@@ -1,19 +1,19 @@
-# Chrome Web Store Listing — Instant Theme Changer
+# Chrome Web Store Listing — Theme Studio
 
 > Last Updated: 2026-11-25
 
 ## Store Listing
 
 **Extension Name** [REQUIRED]  
-Instant Theme Changer
+Theme Studio
 
 **Short Description** [REQUIRED]  
 Instantly customize and auto-rotate your browser appearance, New Tab wallpapers, and custom Chromium themes with zero telemetry.
 
 **Detailed Description** [REQUIRED]  
-Transform your browser's look in one click with Instant Theme Changer — an ultra-lightweight, privacy-first theme studio with 50+ curated aesthetic palettes, custom tab wallpapers, and an automated scheduler.
+Transform your browser's look in one click with Theme Studio — an ultra-lightweight, privacy-first theme studio with 50+ curated aesthetic palettes, custom tab wallpapers, and an automated scheduler.
 
-Whether you enjoy minimal pastels, cozy cafe tones, OLED dark modes, cyberpunk vibes, anime inspirations, or official Chrome Color palettes, Instant Theme Changer updates your browser appearance locally with zero external network tracking.
+Whether you enjoy minimal pastels, cozy cafe tones, OLED dark modes, cyberpunk vibes, anime inspirations, or official Chrome Color palettes, Theme Studio updates your browser appearance locally with zero external network tracking.
 
 KEY FEATURES
 - 50+ Curated Themes: Instant access to Chrome Colors, Dark & Black, Window to Wild, Kawaii, Pastel, Cafe & Minimal, Cyber & Retro, Space & Night, Anime & Ghibli, and Apple Originals.
@@ -31,7 +31,7 @@ HOW TO USE IT
 5. Click the reset button anytime to restore your native browser default appearance.
 
 PRIVACY & PERFORMANCE PROMISE
-Instant Theme Changer runs 100% locally on your device (`ThemeStudioDB` IndexedDB & `chrome.storage.local`). It does not track browsing history, inject ads, or send data to external servers.
+Theme Studio runs 100% locally on your device (`ThemeStudioDB` IndexedDB & `chrome.storage.local`). It does not track browsing history, inject ads, or send data to external servers.
 
 **Category** [REQUIRED]  
 Photos & Art / Productivity
@@ -96,6 +96,6 @@ Included in `extension/PRIVACY_POLICY.md`.
 - **Regions**: All regions
 
 ## Developer Info
-- **Publisher Name**: Instant Theme Changer Studio
+- **Publisher Name**: Theme Studio
 - **Contact Email**: `support@instantthemechanger.local`
-- **Support URL**: `https://github.com/instant-theme-changer/issues`
+- **Support URL**: `https://github.com/tofazzalopu/Theme-Studio/issues`

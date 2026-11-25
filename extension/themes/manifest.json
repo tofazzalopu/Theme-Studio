@@ -1,59 +1,59 @@
 {
   "manifest_version": 3,
-  "version": "1.0.8480",
-  "name": "Theme Studio - Live Companion (Lilac)",
+  "version": "1.0.9470",
+  "name": "Theme Studio - Live Companion (GTA-VI)",
   "description": "Native tab bar and toolbar companion theme managed by Instant Theme Changer.",
   "theme": {
     "colors": {
       "frame": [
-        223,
-        215,
-        248
+        150,
+        77,
+        179
       ],
       "frame_inactive": [
-        227,
-        222,
-        245
+        123,
+        63,
+        147
       ],
       "toolbar": [
-        238,
-        221,
-        245
+        255,
+        172,
+        105
       ],
       "tab_text": [
-        29,
-        29,
-        31
+        0,
+        0,
+        0
       ],
       "tab_background_text": [
-        103,
-        100,
-        113
+        57,
+        29,
+        68
       ],
       "bookmark_text": [
-        29,
-        29,
-        31
+        0,
+        0,
+        0
       ],
       "omnibox_background": [
-        243,
-        232,
-        249
+        255,
+        204,
+        165
       ],
       "omnibox_text": [
-        29,
-        29,
-        31
+        0,
+        0,
+        0
       ],
       "ntp_background": [
+        255,
         251,
-        249,
         255
       ],
       "ntp_text": [
-        29,
-        29,
-        31
+        0,
+        0,
+        0
       ]
     }
   }
