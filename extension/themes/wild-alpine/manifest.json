@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Alpine Peaks",
+  "description": "Alpine Peaks aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        27,
+        42,
+        65
+      ],
+      "frame_inactive": [
+        22,
+        34,
+        53
+      ],
+      "toolbar": [
+        39,
+        64,
+        96
+      ],
+      "tab_text": [
+        241,
+        250,
+        238
+      ],
+      "tab_background_text": [
+        160,
+        171,
+        172
+      ],
+      "bookmark_text": [
+        241,
+        250,
+        238
+      ],
+      "omnibox_background": [
+        29,
+        49,
+        74
+      ],
+      "omnibox_text": [
+        241,
+        250,
+        238
+      ],
+      "ntp_background": [
+        13,
+        27,
+        42
+      ],
+      "ntp_text": [
+        241,
+        250,
+        238
+      ]
+    }
+  }
+}

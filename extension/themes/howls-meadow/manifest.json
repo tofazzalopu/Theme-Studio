@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Howls Meadow Sky",
+  "description": "Howl's Meadow aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        114,
+        148,
+        212
+      ],
+      "frame_inactive": [
+        156,
+        178,
+        222
+      ],
+      "toolbar": [
+        167,
+        199,
+        231
+      ],
+      "tab_text": [
+        29,
+        45,
+        68
+      ],
+      "tab_background_text": [
+        61,
+        84,
+        123
+      ],
+      "bookmark_text": [
+        29,
+        45,
+        68
+      ],
+      "omnibox_background": [
+        196,
+        219,
+        241
+      ],
+      "omnibox_text": [
+        29,
+        45,
+        68
+      ],
+      "ntp_background": [
+        240,
+        248,
+        255
+      ],
+      "ntp_text": [
+        29,
+        45,
+        68
+      ]
+    }
+  }
+}

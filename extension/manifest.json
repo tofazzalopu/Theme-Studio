@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "Instant Theme Changer",
+  "version": "1.0.0",
+  "description": "Secure, ultra-lightweight theme manager with Apple-inspired UI and native Chromium appearance integration.",
+  "permissions": [
+    "management",
+    "storage",
+    "alarms",
+    "downloads",
+    "tabs",
+    "topSites",
+    "favicon"
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none';"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab/newtab.html"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "Instant Theme Changer"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "assets/*",
+        "themes/*",
+        "sharedUtils.js",
+        "themesData.js",
+        "themeGenerator.js",
+        "themeController.js",
+        "liveThemeStore.js",
+        "popup/companion.html",
+        "popup/companion.js",
+        "newtab/*"
+      ],
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ]
+    }
+  ]
+}

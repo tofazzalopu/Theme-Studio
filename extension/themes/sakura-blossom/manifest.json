@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Sakura Blossom",
+  "description": "Sakura Blossom aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        251,
+        195,
+        188
+      ],
+      "frame_inactive": [
+        245,
+        209,
+        206
+      ],
+      "toolbar": [
+        247,
+        209,
+        205
+      ],
+      "tab_text": [
+        61,
+        38,
+        38
+      ],
+      "tab_background_text": [
+        133,
+        98,
+        95
+      ],
+      "bookmark_text": [
+        61,
+        38,
+        38
+      ],
+      "omnibox_background": [
+        250,
+        223,
+        221
+      ],
+      "omnibox_text": [
+        61,
+        38,
+        38
+      ],
+      "ntp_background": [
+        255,
+        245,
+        245
+      ],
+      "ntp_text": [
+        61,
+        38,
+        38
+      ]
+    }
+  }
+}

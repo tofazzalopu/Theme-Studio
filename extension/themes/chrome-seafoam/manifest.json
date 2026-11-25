@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.53587",
+  "name": "Theme Studio - Live Companion (Baby Panda)",
+  "description": "Native tab bar and toolbar companion theme managed by Instant Theme Changer.",
+  "theme": {
+    "colors": {
+      "frame": [
+        222,
+        226,
+        230
+      ],
+      "frame_inactive": [
+        227,
+        229,
+        234
+      ],
+      "toolbar": [
+        248,
+        249,
+        250
+      ],
+      "tab_text": [
+        33,
+        37,
+        41
+      ],
+      "tab_background_text": [
+        105,
+        109,
+        113
+      ],
+      "bookmark_text": [
+        33,
+        37,
+        41
+      ],
+      "omnibox_background": [
+        251,
+        251,
+        252
+      ],
+      "omnibox_text": [
+        33,
+        37,
+        41
+      ],
+      "ntp_background": [
+        255,
+        255,
+        255
+      ],
+      "ntp_text": [
+        33,
+        37,
+        41
+      ]
+    }
+  }
+}

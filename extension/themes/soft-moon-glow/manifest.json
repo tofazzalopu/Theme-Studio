@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Soft Moon Glow",
+  "description": "Soft Moon Glow aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        36,
+        30,
+        56
+      ],
+      "frame_inactive": [
+        30,
+        25,
+        46
+      ],
+      "toolbar": [
+        61,
+        49,
+        91
+      ],
+      "tab_text": [
+        255,
+        255,
+        255
+      ],
+      "tab_background_text": [
+        172,
+        170,
+        179
+      ],
+      "bookmark_text": [
+        255,
+        255,
+        255
+      ],
+      "omnibox_background": [
+        46,
+        37,
+        70
+      ],
+      "omnibox_text": [
+        255,
+        255,
+        255
+      ],
+      "ntp_background": [
+        23,
+        18,
+        38
+      ],
+      "ntp_text": [
+        255,
+        255,
+        255
+      ]
+    }
+  }
+}

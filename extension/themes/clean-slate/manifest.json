@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Clean Slate",
+  "description": "Clean Slate aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        226,
+        232,
+        240
+      ],
+      "frame_inactive": [
+        229,
+        233,
+        240
+      ],
+      "toolbar": [
+        248,
+        250,
+        252
+      ],
+      "tab_text": [
+        15,
+        23,
+        42
+      ],
+      "tab_background_text": [
+        95,
+        102,
+        117
+      ],
+      "bookmark_text": [
+        15,
+        23,
+        42
+      ],
+      "omnibox_background": [
+        251,
+        252,
+        253
+      ],
+      "omnibox_text": [
+        15,
+        23,
+        42
+      ],
+      "ntp_background": [
+        255,
+        255,
+        255
+      ],
+      "ntp_text": [
+        15,
+        23,
+        42
+      ]
+    }
+  }
+}

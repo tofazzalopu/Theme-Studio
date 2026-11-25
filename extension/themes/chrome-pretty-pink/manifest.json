@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Pretty in Pink",
+  "description": "Pretty in Pink aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        194,
+        24,
+        91
+      ],
+      "frame_inactive": [
+        159,
+        20,
+        75
+      ],
+      "toolbar": [
+        233,
+        30,
+        99
+      ],
+      "tab_text": [
+        255,
+        255,
+        255
+      ],
+      "tab_background_text": [
+        232,
+        167,
+        193
+      ],
+      "bookmark_text": [
+        255,
+        255,
+        255
+      ],
+      "omnibox_background": [
+        239,
+        93,
+        143
+      ],
+      "omnibox_text": [
+        255,
+        255,
+        255
+      ],
+      "ntp_background": [
+        248,
+        187,
+        208
+      ],
+      "ntp_text": [
+        255,
+        255,
+        255
+      ]
+    }
+  }
+}

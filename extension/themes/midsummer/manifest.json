@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Midsummer",
+  "description": "Midsummer aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        254,
+        218,
+        194
+      ],
+      "frame_inactive": [
+        247,
+        224,
+        210
+      ],
+      "toolbar": [
+        247,
+        180,
+        201
+      ],
+      "tab_text": [
+        29,
+        29,
+        31
+      ],
+      "tab_background_text": [
+        114,
+        101,
+        93
+      ],
+      "bookmark_text": [
+        29,
+        29,
+        31
+      ],
+      "omnibox_background": [
+        250,
+        208,
+        219
+      ],
+      "omnibox_text": [
+        29,
+        29,
+        31
+      ],
+      "ntp_background": [
+        255,
+        250,
+        245
+      ],
+      "ntp_text": [
+        29,
+        29,
+        31
+      ]
+    }
+  }
+}

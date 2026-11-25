@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Cotton Candy",
+  "description": "Cotton Candy aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        247,
+        202,
+        208
+      ],
+      "frame_inactive": [
+        243,
+        214,
+        219
+      ],
+      "toolbar": [
+        181,
+        226,
+        250
+      ],
+      "tab_text": [
+        43,
+        45,
+        66
+      ],
+      "tab_background_text": [
+        121,
+        105,
+        120
+      ],
+      "bookmark_text": [
+        43,
+        45,
+        66
+      ],
+      "omnibox_background": [
+        211,
+        232,
+        248
+      ],
+      "omnibox_text": [
+        43,
+        45,
+        66
+      ],
+      "ntp_background": [
+        255,
+        241,
+        245
+      ],
+      "ntp_text": [
+        43,
+        45,
+        66
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Forest Wilds",
+  "description": "Forest Wilds aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        20,
+        40,
+        29
+      ],
+      "frame_inactive": [
+        16,
+        33,
+        24
+      ],
+      "toolbar": [
+        32,
+        61,
+        46
+      ],
+      "tab_text": [
+        153,
+        217,
+        140
+      ],
+      "tab_background_text": [
+        102,
+        150,
+        98
+      ],
+      "bookmark_text": [
+        153,
+        217,
+        140
+      ],
+      "omnibox_background": [
+        23,
+        46,
+        34
+      ],
+      "omnibox_text": [
+        153,
+        217,
+        140
+      ],
+      "ntp_background": [
+        10,
+        23,
+        16
+      ],
+      "ntp_text": [
+        153,
+        217,
+        140
+      ]
+    }
+  }
+}

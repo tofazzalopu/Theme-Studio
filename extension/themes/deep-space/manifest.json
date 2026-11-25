@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Deep Space Horizon",
+  "description": "Deep Space aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        13,
+        2,
+        33
+      ],
+      "frame_inactive": [
+        11,
+        2,
+        27
+      ],
+      "toolbar": [
+        38,
+        20,
+        71
+      ],
+      "tab_text": [
+        255,
+        56,
+        100
+      ],
+      "tab_background_text": [
+        163,
+        35,
+        75
+      ],
+      "bookmark_text": [
+        255,
+        56,
+        100
+      ],
+      "omnibox_background": [
+        25,
+        12,
+        51
+      ],
+      "omnibox_text": [
+        255,
+        56,
+        100
+      ],
+      "ntp_background": [
+        5,
+        0,
+        20
+      ],
+      "ntp_text": [
+        255,
+        56,
+        100
+      ]
+    }
+  }
+}

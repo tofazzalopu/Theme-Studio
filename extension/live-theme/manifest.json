@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Theme Studio - Live Companion",
+  "version": "1.0.0",
+  "description": "Dynamic native browser companion theme controlled by Instant Theme Changer.",
+  "theme": {
+    "colors": {
+      "frame": [13, 27, 42],
+      "frame_inactive": [10, 20, 32],
+      "toolbar": [27, 38, 59],
+      "tab_text": [255, 255, 255],
+      "tab_background_text": [180, 195, 220],
+      "bookmark_text": [255, 255, 255],
+      "ntp_background": [13, 27, 42],
+      "ntp_text": [255, 255, 255],
+      "omnibox_background": [15, 23, 42],
+      "omnibox_text": [255, 255, 255]
+    }
+  }
+}

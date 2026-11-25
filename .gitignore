@@ -1,0 +1,18 @@
+# Packaged archive
+instant-theme-changer.zip
+
+# Browser runtime cache & local device data
+Cached Theme.pak
+extension/themes/wallpapers/
+extension/themes/themes/
+extension/themes/theme-studio-settings.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+*.tmp

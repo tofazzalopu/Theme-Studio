@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Just Black",
+  "description": "Just Black aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        0,
+        0,
+        0
+      ],
+      "frame_inactive": [
+        0,
+        0,
+        0
+      ],
+      "toolbar": [
+        28,
+        28,
+        30
+      ],
+      "tab_text": [
+        255,
+        255,
+        255
+      ],
+      "tab_background_text": [
+        158,
+        158,
+        158
+      ],
+      "bookmark_text": [
+        255,
+        255,
+        255
+      ],
+      "omnibox_background": [
+        24,
+        24,
+        25
+      ],
+      "omnibox_text": [
+        255,
+        255,
+        255
+      ],
+      "ntp_background": [
+        18,
+        18,
+        18
+      ],
+      "ntp_text": [
+        255,
+        255,
+        255
+      ]
+    }
+  }
+}

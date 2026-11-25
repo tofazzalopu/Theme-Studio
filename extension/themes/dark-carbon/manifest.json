@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Midnight Carbon",
+  "description": "Midnight Carbon aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        17,
+        18,
+        21
+      ],
+      "frame_inactive": [
+        14,
+        15,
+        17
+      ],
+      "toolbar": [
+        26,
+        28,
+        35
+      ],
+      "tab_text": [
+        156,
+        163,
+        175
+      ],
+      "tab_background_text": [
+        103,
+        108,
+        116
+      ],
+      "bookmark_text": [
+        156,
+        163,
+        175
+      ],
+      "omnibox_background": [
+        21,
+        22,
+        28
+      ],
+      "omnibox_text": [
+        156,
+        163,
+        175
+      ],
+      "ntp_background": [
+        13,
+        14,
+        18
+      ],
+      "ntp_text": [
+        156,
+        163,
+        175
+      ]
+    }
+  }
+}

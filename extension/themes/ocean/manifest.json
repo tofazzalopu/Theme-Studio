@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Ocean Blue",
+  "description": "Ocean aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        15,
+        43,
+        72
+      ],
+      "frame_inactive": [
+        12,
+        35,
+        59
+      ],
+      "toolbar": [
+        23,
+        84,
+        137
+      ],
+      "tab_text": [
+        255,
+        255,
+        255
+      ],
+      "tab_background_text": [
+        164,
+        174,
+        185
+      ],
+      "bookmark_text": [
+        255,
+        255,
+        255
+      ],
+      "omnibox_background": [
+        18,
+        60,
+        101
+      ],
+      "omnibox_text": [
+        255,
+        255,
+        255
+      ],
+      "ntp_background": [
+        10,
+        25,
+        47
+      ],
+      "ntp_text": [
+        255,
+        255,
+        255
+      ]
+    }
+  }
+}

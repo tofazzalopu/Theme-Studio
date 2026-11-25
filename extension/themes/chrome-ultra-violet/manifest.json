@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Ultra Violet",
+  "description": "Ultra Violet aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        49,
+        27,
+        146
+      ],
+      "frame_inactive": [
+        40,
+        22,
+        120
+      ],
+      "toolbar": [
+        69,
+        39,
+        160
+      ],
+      "tab_text": [
+        255,
+        255,
+        255
+      ],
+      "tab_background_text": [
+        177,
+        168,
+        214
+      ],
+      "bookmark_text": [
+        255,
+        255,
+        255
+      ],
+      "omnibox_background": [
+        136,
+        116,
+        194
+      ],
+      "omnibox_text": [
+        255,
+        255,
+        255
+      ],
+      "ntp_background": [
+        237,
+        231,
+        246
+      ],
+      "ntp_text": [
+        255,
+        255,
+        255
+      ]
+    }
+  }
+}

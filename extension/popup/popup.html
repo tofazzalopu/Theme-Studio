@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- MANDATORY: Declare support for both light and dark themes -->
+  <meta name="color-scheme" content="light dark">
+  <title>Instant Theme Changer</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon-16.png">
+  <link rel="shortcut icon" href="../icons/icon-32.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="../icons/icon-128.png">
+  <link rel="stylesheet" href="popup.css?v=4.2.0">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header: Minimal & Purposeful -->
+    <header class="app-header">
+      <div class="header-brand" title="Theme Studio">
+        <img class="brand-logo logo-dark" src="../assets/Theme%20Studio%20Gradient%20Wordmark-White.png" alt="Theme Studio">
+        <img class="brand-logo logo-light" src="../assets/Theme%20Studio%20Gradient%20Wordmark.png" alt="Theme Studio">
+      </div>
+
+      <div class="header-controls">
+        <div class="active-theme-pill" title="Current Active Theme">
+          <span class="status-indicator-dot"></span>
+          <span id="activeThemeBadge">Default Browser</span>
+        </div>
+        <button type="button" class="live-sync-setup-btn" id="btnLiveSyncSetup" title="Open setup to load theme in Edge/Chrome">
+          Load in Edge
+        </button>
+        <button type="button" id="themeModeToggleBtn" class="theme-mode-toggle" title="Switch between Light &amp; Dark mode" aria-label="Toggle Dark / Light Mode" role="switch" aria-checked="false">
+          <span class="toggle-track">
+            <span class="track-sun-glow" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </span>
+            <span class="track-moon-stars" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </span>
+            <span class="toggle-thumb">
+              <span class="thumb-icon thumb-sun">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+              </span>
+              <span class="thumb-icon thumb-moon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+              </span>
+            </span>
+          </span>
+        </button>
+        <button type="button" id="dashboardToggleBtn" class="icon-button" title="Theme Studio Dashboard" aria-label="Theme Studio Dashboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+            <path d="M14 9h4M14 15h4"/>
+          </svg>
+        </button>
+        <button type="button" id="quickDefaultBtn" class="icon-button" title="Reset to Browser Default" aria-label="Reset to Browser Default">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Refined Segmented Control -->
+    <nav class="segmented-control" role="tablist" aria-label="Theme Navigation">
+      <button type="button" class="segment-btn active" role="tab" aria-selected="true" data-tab="gallery">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+          <circle cx="9" cy="9" r="2"/>
+          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+        </svg>
+        <span>Gallery</span>
+      </button>
+      <button type="button" class="segment-btn" role="tab" aria-selected="false" data-tab="scheduler">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Scheduler</span>
+      </button>
+      <button type="button" class="segment-btn" role="tab" aria-selected="false" data-tab="customizer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        <span>Customizer</span>
+      </button>
+    </nav>
+
+    <!-- Main View Panels -->
+    <main class="content-viewport">
+      <!-- 1. GALLERY TAB -->
+      <section id="tab-gallery" class="tab-panel active" role="tabpanel">
+        <!-- Interactive Category Filter Bar with Left/Right Scroll Controls -->
+        <div class="category-nav-wrapper">
+          <button type="button" class="category-nav-arrow left" id="catNavLeft" aria-label="Scroll categories left" title="Scroll left">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="gallery-category-bar" id="galleryCategoryBar">
+            <button type="button" class="cat-pill active" data-category="all">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+              <span>All (54)</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="wallpapers" id="wallpapersCategoryPill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <span>Wallpapers</span>
+            </button>
+            <button type="button" class="cat-pill hidden" data-category="custom" id="customCategoryPill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>My Studio</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="chrome">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+              <span>Chrome Colors</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="dark">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <span>Dark &amp; Black</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="wild">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+              <span>Window to Wild</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="kawaii">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              <span>Kawaii</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="pastel">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+              <span>Pastel</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="cafe">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+              <span>Cafe &amp; Minimal</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="cyber">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Cyber &amp; Retro</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="celestial">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="19" r="1"/></svg>
+              <span>Space &amp; Night</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="anime">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 4 5 5-11 11H4v-5L15 4z"/><line x1="18.5" y1="2.5" x2="21.5" y2="5.5"/></svg>
+              <span>Anime &amp; Ghibli</span>
+            </button>
+            <button type="button" class="cat-pill" data-category="apple">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="12" x="3" y="4" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+              <span>Apple Originals</span>
+            </button>
+          </div>
+          <button type="button" class="category-nav-arrow right" id="catNavRight" aria-label="Scroll categories right" title="Scroll right">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Quick Theme Search with Instant Clear -->
+        <div class="gallery-search-wrap">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="gallerySearchInput" placeholder="Filter aesthetic themes (e.g. matcha, coffee, lofi)..." autocomplete="off" spellcheck="false">
+          <button type="button" class="search-clear-btn hidden" id="gallerySearchClear" title="Clear filter">&times;</button>
+        </div>
+
+        <!-- Horizontal Theme Cards Scroller with Auto-Scroll & Navigation Dots -->
+        <div class="cards-carousel-wrapper" id="cardsCarouselWrapper">
+          <div class="gallery-scroll-container" id="galleryScrollContainer">
+            <div class="theme-cards-grid" id="themeCardsGrid">
+              <!-- Dynamic cards rendered via popup.js -->
+            </div>
+          </div>
+          <!-- Navigation Dots (Auto-scrolls every 2s) -->
+          <div class="cards-pagination-dots" id="cardsPaginationDots" role="tablist" aria-label="Theme Carousel Pagination"></div>
+        </div>
+
+        <!-- Tab Wallpapers Manager & Auto-Rotation View inside Gallery -->
+        <div class="wallpaper-studio-section hidden" id="wallpaperStudioSection">
+          <div class="wallpaper-controls-bar">
+            <label class="wallpaper-upload-btn" for="wallpaperUploadInput" title="Upload PNG, JPG or WebP wallpapers from your device">
+              <input type="file" id="wallpaperUploadInput" accept="image/*" multiple class="file-input-hidden">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload Wallpaper</span>
+            </label>
+
+            <div class="wallpaper-rotate-controls">
+              <label class="wallpaper-toggle-wrap" for="wallpaperAutoRotateToggle" title="Auto-rotate uploaded wallpapers across tabs">
+                <span>Auto-Rotate</span>
+                <span class="apple-switch compact-switch">
+                  <input type="checkbox" id="wallpaperAutoRotateToggle">
+                  <span class="switch-slider"></span>
+                </span>
+              </label>
+              <select id="wallpaperIntervalSelect" class="wallpaper-interval-select" title="Wallpaper rotation interval">
+                <option value="1">1m</option>
+                <option value="5">5m</option>
+                <option value="15" selected>15m</option>
+                <option value="60">1h</option>
+                <option value="1440">24h</option>
+              </select>
+              <button type="button" id="btnWallpaperRotateNow" class="wallpaper-mini-btn" title="Switch to next wallpaper now">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+                <span>Next</span>
+              </button>
+              <button type="button" id="btnWallpaperClear" class="wallpaper-mini-btn subtle" title="Remove active tab wallpaper">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>None</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="wallpaper-cards-grid" id="wallpaperCardsGrid">
+            <!-- Uploaded wallpaper thumbnails rendered by popup.js -->
+          </div>
+        </div>
+
+        <div class="gallery-footer">
+          <button type="button" id="btnOpenWallpapersQuick" class="revert-default-btn" title="Upload and auto-rotate tab wallpapers">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            <span>Tab Wallpapers</span>
+          </button>
+          <button type="button" id="revertDefaultBtn" class="revert-default-btn" title="Restore Native Browser Appearance">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            <span>Restore Browser Default</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. SCHEDULER TAB (Auto-cycle timer & queue) -->
+      <section id="tab-scheduler" class="tab-panel" role="tabpanel">
+        <!-- Hero Countdown & Master Auto-Cycle Card -->
+        <div class="apple-card scheduler-countdown-card is-paused" id="countdownCard">
+          <div class="countdown-top-bar">
+            <div class="countdown-badge-pill">
+              <span class="countdown-pulse-dot" id="countdownPulseDot"></span>
+              <span id="countdownStatusBadge">Scheduler Paused</span>
+            </div>
+            <label class="scheduler-master-toggle" for="scheduleToggle" title="Enable automatic theme cycling">
+              <span class="scheduler-toggle-label">Auto-Cycle</span>
+              <span class="apple-switch">
+                <input type="checkbox" id="scheduleToggle">
+                <span class="switch-slider"></span>
+              </span>
+            </label>
+          </div>
+
+          <div class="countdown-hero-body">
+            <div class="countdown-timer-block">
+              <div class="countdown-digits" id="countdownDigits">PAUSED</div>
+              <div class="countdown-subtext" id="countdownSubtext">Enable Auto-Cycle to start timer</div>
+            </div>
+
+            <div class="countdown-next-card">
+              <div class="countdown-next-info">
+                <span class="countdown-next-swatch" id="countdownNextSwatch"></span>
+                <div class="countdown-next-text">
+                  <span class="target-sub">Up Next</span>
+                  <span class="target-name" id="countdownNextTheme">Aurora</span>
+                </div>
+              </div>
+              <div class="countdown-actions-bar">
+                <button type="button" class="scheduler-action-btn primary" id="btnRotateNow" title="Advance to next theme in queue immediately">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+                  <span>Rotate</span>
+                </button>
+                <button type="button" class="scheduler-action-btn" id="btnResetCountdown" title="Reset interval timer">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  <span>Reset</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="countdown-progress-track">
+            <div class="countdown-progress-bar" id="countdownProgressBar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Switch Interval Selector Card -->
+        <div class="apple-card scheduler-interval-card" id="scheduleSection">
+          <div class="card-row">
+            <div class="row-label">
+              <div class="label-title">Switch Interval</div>
+              <div class="label-desc">Rotate automatically via Chrome Alarms</div>
+            </div>
+            <div class="chip-selector scheduler-interval-group" id="intervalChips">
+              <button type="button" class="chip-btn" data-minutes="1">1m</button>
+              <button type="button" class="chip-btn" data-minutes="5">5m</button>
+              <button type="button" class="chip-btn" data-minutes="15">15m</button>
+              <button type="button" class="chip-btn" data-hours="1">1h</button>
+              <button type="button" class="chip-btn active" data-hours="2">2h</button>
+              <button type="button" class="chip-btn" data-hours="4">4h</button>
+              <button type="button" class="chip-btn" data-hours="24">24h</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rotation Sequence Queue Card -->
+        <div class="apple-card scheduler-queue-card">
+          <div class="card-header-clean">
+            <div class="scheduler-queue-heading">
+              <span class="label-title">Rotation Sequence</span>
+              <span class="badge-subtle" id="queueCount">4 Themes</span>
+            </div>
+            <button type="button" class="add-screen-btn" id="btnAddScreen" title="Add another theme to rotation sequence">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Add Theme</span>
+            </button>
+          </div>
+
+          <div class="add-screen-panel hidden" id="addScreenPanel">
+            <div class="add-screen-row">
+              <select class="add-screen-select" id="selectThemeToAdd" title="Choose theme to add to rotation">
+                <!-- Dynamically populated by popup.js -->
+              </select>
+              <button type="button" class="add-screen-confirm-btn" id="btnConfirmAddScreen">Add</button>
+              <button type="button" class="add-screen-cancel-btn" id="btnCancelAddScreen" title="Cancel">&times;</button>
+            </div>
+          </div>
+
+          <div class="queue-list" id="queueList">
+            <!-- Queued themes rendered by popup.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. CUSTOMIZER TAB (Manifest Importer & Live Theme Designer) -->
+      <section id="tab-customizer" class="tab-panel" role="tabpanel">
+        <div class="apple-card">
+          <div class="card-header-clean" style="margin-bottom: 6px;">
+            <div class="label-title">Secure Theme Importer</div>
+            <span class="badge-subtle hidden" id="importedManifestBadge">Manifest Loaded</span>
+          </div>
+          <p class="label-desc mb-8">
+            Drop any Chromium <code>manifest.json</code>, theme <code>.zip</code>, or unpacked folder to populate Live Theme Designer, add it to Studio, and install via Developer Panel.
+          </p>
+
+          <label class="apple-dropzone" for="themeFileInput" id="dropZone">
+            <input type="file" id="themeFileInput" accept=".json,.zip,application/json,application/zip" class="file-input-hidden">
+            <div class="dropzone-content">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <div class="dropzone-text">Drop <code>manifest.json</code>, <code>.zip</code>, or folder here or <span>Browse</span></div>
+              <div class="dropzone-sub">In-Memory Sanitizer &bull; Auto-Applies &amp; Saves to Studio</div>
+            </div>
+          </label>
+          <div class="importer-quick-bar">
+            <button type="button" id="btnScanThemeFolder" class="apple-button secondary small" title="Pick any unpacked theme folder containing manifest.json">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span>Scan Theme Folder</span>
+            </button>
+            <button type="button" id="btnOpenImporterWindow" class="apple-button secondary small" title="Open Customizer in a persistent tab for drag &amp; drop">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <span>Full Tab Importer</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="apple-card mt-12">
+          <div class="label-title mb-8">Live Theme Designer</div>
+          <div class="color-pickers-grid">
+            <div class="color-picker-item">
+              <label for="themeNameInput">Theme Name</label>
+              <input type="text" id="themeNameInput" class="apple-input" value="Custom Apple Glow" maxlength="32">
+            </div>
+            <div class="color-picker-item">
+              <label for="colorFrame">Window Frame</label>
+              <div class="color-input-wrapper">
+                <input type="color" id="colorFrame" value="#1c1c1e">
+                <input type="text" id="hexFrame" class="apple-input-hex" value="#1c1c1e" maxlength="7">
+              </div>
+            </div>
+            <div class="color-picker-item">
+              <label for="colorToolbar">Toolbar / Tabs</label>
+              <div class="color-input-wrapper">
+                <input type="color" id="colorToolbar" value="#2c2c2e">
+                <input type="text" id="hexToolbar" class="apple-input-hex" value="#2c2c2e" maxlength="7">
+              </div>
+            </div>
+            <div class="color-picker-item">
+              <label for="colorText">Tab Text</label>
+              <div class="color-input-wrapper">
+                <input type="color" id="colorText" value="#ffffff">
+                <input type="text" id="hexText" class="apple-input-hex" value="#ffffff" maxlength="7">
+              </div>
+            </div>
+            <div class="color-picker-item">
+              <label for="colorNtp">New Tab Page</label>
+              <div class="color-input-wrapper">
+                <input type="color" id="colorNtp" value="#121212">
+                <input type="text" id="hexNtp" class="apple-input-hex" value="#121212" maxlength="7">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini Browser Window Preview -->
+          <div class="mini-window-preview mt-12" id="previewWindow">
+            <div class="mini-window-frame" id="prevFrame">
+              <div class="mini-traffic-lights">
+                <span class="tl-dot red"></span>
+                <span class="tl-dot yellow"></span>
+                <span class="tl-dot green"></span>
+              </div>
+              <div class="mini-tab-bar">
+                <div class="mini-tab active" id="prevTab">
+                  <span id="prevTabText">New Tab</span>
+                </div>
+              </div>
+            </div>
+            <div class="mini-window-toolbar" id="prevToolbar">
+              <div class="mini-address-bar">instant-theme://active</div>
+            </div>
+            <div class="mini-window-body" id="prevNtp">
+              <div class="mini-ntp-logo">Chromium</div>
+            </div>
+          </div>
+
+          <div class="designer-actions designer-actions-3col mt-12">
+            <button type="button" id="applyCustomThemeBtn" class="apple-button primary" title="Save to Studio gallery & apply immediately to browser">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Add to Studio &amp; Apply</span>
+            </button>
+            <button type="button" id="installCustomDevPanelBtn" class="apple-button secondary" title="Export unpacked package & open Developer Panel (edge://extensions)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <span>Dev Panel</span>
+            </button>
+            <button type="button" id="validateCompileBtn" class="apple-button secondary" title="Validate and download theme manifest.json">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export JSON</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="apple-card mt-12 local-space-card">
+          <div class="card-row">
+            <div class="row-label">
+              <div class="label-title">Local Device Storage</div>
+              <div class="label-desc" id="localSpaceStatusText">Grant permission to persist DB, settings &amp; wallpapers on your device</div>
+            </div>
+            <button type="button" id="btnGrantLocalSpace" class="apple-button secondary small">Grant Access</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Non-Modal Compact Action Update Dialog -->
+    <dialog id="actionUpdateModal" class="action-update-dialog hidden" aria-live="polite" aria-labelledby="actionModalTitle">
+      <div class="action-modal-card" id="actionModalCard">
+        <div class="action-modal-icon" id="actionModalIcon" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="action-modal-body">
+          <span class="action-modal-title" id="actionModalTitle">Updated</span>
+          <span class="action-modal-message" id="actionModalMessage">Ready</span>
+        </div>
+        <button type="button" id="actionModalCloseBtn" class="action-modal-close-btn" aria-label="Dismiss dialog">&times;</button>
+        <div class="action-modal-progress" id="actionModalProgress"></div>
+      </div>
+    </dialog>
+
+    <!-- Edge / Chromium Theme Quick Installer Modal -->
+    <div id="edgeInstallerModal" class="edge-installer-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="installerThemeTitle">
+      <div class="edge-installer-card">
+        <div class="installer-header">
+          <div class="installer-title-wrap">
+            <span class="installer-badge-pill">Microsoft Edge Appearance</span>
+            <h3 id="installerThemeTitle" class="installer-theme-name">Theme Name</h3>
+          </div>
+          <button type="button" id="closeInstallerModal" class="installer-close-btn" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="installer-body">
+          <!-- Live Color Swatch Strip -->
+          <div class="installer-swatches-strip">
+            <div class="installer-swatch-item" id="swatchFrame" title="Frame Color">
+              <span class="swatch-label">Frame</span>
+            </div>
+            <div class="installer-swatch-item" id="swatchToolbar" title="Toolbar Color">
+              <span class="swatch-label">Toolbar</span>
+            </div>
+            <div class="installer-swatch-item" id="swatchTab" title="Tab Text">
+              <span class="swatch-label">Text</span>
+            </div>
+            <div class="installer-swatch-item" id="swatchNtp" title="New Tab Page">
+              <span class="swatch-label">New Tab</span>
+            </div>
+          </div>
+
+          <!-- Detection Status Indicator -->
+          <div class="installer-status-box" id="installerStatusBox">
+            <span class="status-pulse-dot" id="installerPulseDot"></span>
+            <span id="installerStatusText">Theme package ready in <code id="installerFolderCode">themes/folder</code></span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="installer-actions">
+            <button type="button" id="btnOpenEdgeExtensions" class="apple-button primary" title="Open Edge Extensions page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              <span>1. Open edge://extensions</span>
+            </button>
+            <button type="button" id="btnDownloadThemePackage" class="apple-button secondary" title="Download theme folder as ZIP">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Download .zip Package</span>
+            </button>
+
+            <button type="button" id="btnModalLiveSetup" class="apple-button secondary" style="grid-column: span 2; border-color: rgba(0, 113, 227, 0.4); background: rgba(0, 113, 227, 0.08); color: var(--apple-blue);" title="Setup Single Folder Dynamic Overwrite to switch any theme with 1 click">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Pro Tip: 1-Time Setup for ALL Themes (Live Sync)</span>
+            </button>
+
+          </div>
+
+          <!-- 3-Step Clear Instruction Guide -->
+          <div class="installer-steps-guide">
+            <div class="installer-step">
+              <span class="step-num">1</span>
+              <span class="step-text">In <strong>edge://extensions</strong>, turn ON <strong>Developer mode</strong> (left sidebar).</span>
+            </div>
+            <div class="installer-step">
+              <span class="step-num">2</span>
+              <span class="step-text">Click <strong>Load unpacked</strong> button at the top.</span>
+            </div>
+            <div class="installer-step">
+              <span class="step-num">3</span>
+              <span class="step-text">Select folder <strong id="installerStepFolder">themes/folder</strong> — Edge will immediately apply the theme!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Theme Studio Sidebar Dashboard Backdrop Overlay -->
+  <div id="dashboardSidebarOverlay" class="dashboard-sidebar-overlay hidden"></div>
+
+  <!-- Theme Studio Dashboard Window -->
+  <aside id="dashboardSidebar" class="dashboard-sidebar hidden" role="dialog" aria-modal="true" aria-label="Theme Studio Dashboard">
+    <div class="dashboard-sidebar-header">
+      <div class="dashboard-header-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3" ry="3"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+          <path d="M14 9h4M14 15h4"/>
+        </svg>
+        <span>Theme Studio Dashboard</span>
+      </div>
+      <button type="button" id="closeDashboardSidebarBtn" class="installer-close-btn" aria-label="Close Dashboard">&times;</button>
+    </div>
+
+    <div class="dashboard-sidebar-content">
+      <!-- Top Row: 2-Column Overview (Active Appearance + Automation & Actions) -->
+      <div class="dash-grid-2col">
+        <!-- Card 1: Active Appearance & Color Palette -->
+        <div class="dashboard-card active-theme-summary-card">
+          <div class="dash-card-header-row">
+            <span class="dash-card-heading">Active Appearance</span>
+            <span id="dashModeBadge" class="dash-badge-pill">Dark Appearance</span>
+          </div>
+          <div class="dash-theme-hero">
+            <h3 id="dashActiveThemeName" class="dash-theme-title">Default Browser</h3>
+            <span id="dashSyncBadge" class="dash-sync-badge">New Tab Active</span>
+          </div>
+
+          <div class="dash-swatches-grid" id="dashColorSwatches">
+            <div class="dash-swatch-item">
+              <span class="dash-swatch-preview" id="dashSwatchFrame" style="background: #1e1e1e;"></span>
+              <div class="dash-swatch-meta">
+                <span class="dash-swatch-label">Frame</span>
+                <span class="dash-swatch-hex" id="dashHexFrame">#1E1E1E</span>
+              </div>
+            </div>
+            <div class="dash-swatch-item">
+              <span class="dash-swatch-preview" id="dashSwatchToolbar" style="background: #2d2d2d;"></span>
+              <div class="dash-swatch-meta">
+                <span class="dash-swatch-label">Toolbar</span>
+                <span class="dash-swatch-hex" id="dashHexToolbar">#2D2D2D</span>
+              </div>
+            </div>
+            <div class="dash-swatch-item">
+              <span class="dash-swatch-preview" id="dashSwatchText" style="background: #ffffff;"></span>
+              <div class="dash-swatch-meta">
+                <span class="dash-swatch-label">Tab Text</span>
+                <span class="dash-swatch-hex" id="dashHexText">#FFFFFF</span>
+              </div>
+            </div>
+            <div class="dash-swatch-item">
+              <span class="dash-swatch-preview" id="dashSwatchNtp" style="background: #141414;"></span>
+              <div class="dash-swatch-meta">
+                <span class="dash-swatch-label">NTP Canvas</span>
+                <span class="dash-swatch-hex" id="dashHexNtp">#141414</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Automation & Quick Utilities -->
+        <div class="dashboard-card">
+          <div class="dash-card-header-row">
+            <span class="dash-card-heading">Theme Automation</span>
+            <span class="dash-badge-pill" id="dashScheduleStatus">Inactive</span>
+          </div>
+
+          <div class="dash-info-grid">
+            <div class="dash-info-item">
+              <span class="dash-info-key">Next Theme</span>
+              <span class="dash-info-val highlight" id="dashNextThemeName">--</span>
+            </div>
+            <div class="dash-info-item">
+              <span class="dash-info-key">Time Remaining</span>
+              <span class="dash-info-val" id="dashCountdownDisplay">--:--</span>
+            </div>
+            <div class="dash-info-item">
+              <span class="dash-info-key">ThemeStudioDB</span>
+              <span class="dash-info-val" id="dashApiStatus">Connected</span>
+            </div>
+          </div>
+
+          <div class="dash-actions-row">
+            <button type="button" class="apple-button secondary small" id="btnDashRotateNow">Rotate Now</button>
+            <button type="button" class="apple-button secondary small" id="btnDashGoToScheduler">Scheduler</button>
+          </div>
+          <div class="dash-actions-row">
+            <button type="button" class="apple-button secondary small" id="btnDashResetDefault">Reset Default</button>
+            <button type="button" class="apple-button secondary small" id="btnDashDownloadZip">Download .zip</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Full-Width Card: Native Tab Bar Sync + Extension Folder Install Guide -->
+      <div class="dashboard-card">
+        <div class="dash-card-header-row">
+          <span class="dash-card-heading">Native Tab Bar Sync</span>
+          <span class="dash-dot-indicator connected" id="dashSyncIndicator"></span>
+        </div>
+
+        <div class="dash-info-grid">
+          <div class="dash-info-item">
+            <span class="dash-info-key">Paired Live Folder</span>
+            <span class="dash-info-val" id="dashFolderStatus">Checking...</span>
+          </div>
+          <div class="dash-info-item">
+            <span class="dash-info-key">Browser Theme State</span>
+            <span class="dash-info-val" id="dashThemeStatus">Checking...</span>
+          </div>
+          <div class="dash-info-item">
+            <span class="dash-info-key">Local Device Space</span>
+            <span class="dash-info-val" id="dashLocalSpaceStatus">Checking...</span>
+          </div>
+        </div>
+
+        <div class="dash-install-guide">
+          <div class="dash-guide-title">How to Install Themes from the Extension Folder:</div>
+          <ol class="dash-guide-steps">
+            <li>Click <strong>Open Extensions</strong> below (<code>edge://extensions</code> or <code>chrome://extensions</code>) and switch <strong>Developer mode</strong> ON.</li>
+            <li>Click <strong>Load unpacked</strong>, then open <code>extension/themes/</code> inside your extension directory.</li>
+            <li>Select any theme folder (e.g. <code>lilac</code>, <code>aurora</code>, <code>midsummer</code>) — once loaded, clicking that theme or running the timer changes Edge/Chrome's native tab bar instantly.</li>
+          </ol>
+        </div>
+
+        <div class="dash-actions-row">
+          <button type="button" class="apple-button primary small" id="btnDashConnectLiveTheme">
+            <span>Setup &amp; Manifests Window</span>
+          </button>
+          <button type="button" class="apple-button secondary small" id="btnDashOpenExtensions">
+            <span>Open Extensions</span>
+          </button>
+          <button type="button" class="apple-button secondary small" id="btnDashGrantLocalSpace" title="Grant persistent local storage & folder access">
+            <span>Local Space</span>
+          </button>
+          <button type="button" class="apple-button secondary small" id="btnDashForceRefresh">
+            <span>Refresh Sync</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script type="module" src="popup.js?v=4.2.0"></script>
+</body>
+</html>

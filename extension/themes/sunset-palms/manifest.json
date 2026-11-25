@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Sunset Palms",
+  "description": "Sunset Palms aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        40,
+        16,
+        63
+      ],
+      "frame_inactive": [
+        33,
+        13,
+        52
+      ],
+      "toolbar": [
+        104,
+        45,
+        138
+      ],
+      "tab_text": [
+        255,
+        141,
+        161
+      ],
+      "tab_background_text": [
+        173,
+        94,
+        124
+      ],
+      "bookmark_text": [
+        255,
+        141,
+        161
+      ],
+      "omnibox_background": [
+        71,
+        30,
+        97
+      ],
+      "omnibox_text": [
+        255,
+        141,
+        161
+      ],
+      "ntp_background": [
+        22,
+        8,
+        36
+      ],
+      "ntp_text": [
+        255,
+        141,
+        161
+      ]
+    }
+  }
+}

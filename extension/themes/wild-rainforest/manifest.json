@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Rainforest Canopy",
+  "description": "Rainforest Canopy aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        15,
+        45,
+        30
+      ],
+      "frame_inactive": [
+        12,
+        37,
+        25
+      ],
+      "toolbar": [
+        27,
+        67,
+        50
+      ],
+      "tab_text": [
+        116,
+        198,
+        157
+      ],
+      "tab_background_text": [
+        78,
+        140,
+        109
+      ],
+      "bookmark_text": [
+        116,
+        198,
+        157
+      ],
+      "omnibox_background": [
+        19,
+        51,
+        37
+      ],
+      "omnibox_text": [
+        116,
+        198,
+        157
+      ],
+      "ntp_background": [
+        8,
+        28,
+        18
+      ],
+      "ntp_text": [
+        116,
+        198,
+        157
+      ]
+    }
+  }
+}

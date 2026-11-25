@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Sunset Horizon",
+  "description": "Sunset Horizon aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        56,
+        29,
+        42
+      ],
+      "frame_inactive": [
+        46,
+        24,
+        34
+      ],
+      "toolbar": [
+        89,
+        41,
+        65
+      ],
+      "tab_text": [
+        247,
+        160,
+        114
+      ],
+      "tab_background_text": [
+        174,
+        110,
+        87
+      ],
+      "bookmark_text": [
+        247,
+        160,
+        114
+      ],
+      "omnibox_background": [
+        66,
+        31,
+        48
+      ],
+      "omnibox_text": [
+        247,
+        160,
+        114
+      ],
+      "ntp_background": [
+        32,
+        15,
+        23
+      ],
+      "ntp_text": [
+        247,
+        160,
+        114
+      ]
+    }
+  }
+}

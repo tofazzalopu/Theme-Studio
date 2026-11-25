@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.8480",
+  "name": "Theme Studio - Live Companion (Lilac)",
+  "description": "Native tab bar and toolbar companion theme managed by Instant Theme Changer.",
+  "theme": {
+    "colors": {
+      "frame": [
+        223,
+        215,
+        248
+      ],
+      "frame_inactive": [
+        227,
+        222,
+        245
+      ],
+      "toolbar": [
+        238,
+        221,
+        245
+      ],
+      "tab_text": [
+        29,
+        29,
+        31
+      ],
+      "tab_background_text": [
+        103,
+        100,
+        113
+      ],
+      "bookmark_text": [
+        29,
+        29,
+        31
+      ],
+      "omnibox_background": [
+        243,
+        232,
+        249
+      ],
+      "omnibox_text": [
+        29,
+        29,
+        31
+      ],
+      "ntp_background": [
+        251,
+        249,
+        255
+      ],
+      "ntp_text": [
+        29,
+        29,
+        31
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Peach Bellini",
+  "description": "Peach Bellini aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        255,
+        214,
+        186
+      ],
+      "frame_inactive": [
+        248,
+        221,
+        205
+      ],
+      "toolbar": [
+        255,
+        229,
+        217
+      ],
+      "tab_text": [
+        64,
+        43,
+        32
+      ],
+      "tab_background_text": [
+        137,
+        108,
+        91
+      ],
+      "bookmark_text": [
+        64,
+        43,
+        32
+      ],
+      "omnibox_background": [
+        255,
+        236,
+        227
+      ],
+      "omnibox_text": [
+        64,
+        43,
+        32
+      ],
+      "ntp_background": [
+        255,
+        247,
+        242
+      ],
+      "ntp_text": [
+        64,
+        43,
+        32
+      ]
+    }
+  }
+}

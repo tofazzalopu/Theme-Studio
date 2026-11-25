@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Daydreamer Clouds",
+  "description": "Daydream Clouds aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        189,
+        224,
+        254
+      ],
+      "frame_inactive": [
+        205,
+        228,
+        249
+      ],
+      "toolbar": [
+        205,
+        180,
+        219
+      ],
+      "tab_text": [
+        34,
+        34,
+        59
+      ],
+      "tab_background_text": [
+        93,
+        106,
+        133
+      ],
+      "bookmark_text": [
+        34,
+        34,
+        59
+      ],
+      "omnibox_background": [
+        219,
+        207,
+        233
+      ],
+      "omnibox_text": [
+        34,
+        34,
+        59
+      ],
+      "ntp_background": [
+        240,
+        247,
+        255
+      ],
+      "ntp_text": [
+        34,
+        34,
+        59
+      ]
+    }
+  }
+}

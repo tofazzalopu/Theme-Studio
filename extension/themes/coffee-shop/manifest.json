@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Warm Coffee Shop",
+  "description": "Warm Coffee aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        62,
+        39,
+        35
+      ],
+      "frame_inactive": [
+        51,
+        32,
+        29
+      ],
+      "toolbar": [
+        93,
+        64,
+        55
+      ],
+      "tab_text": [
+        255,
+        255,
+        255
+      ],
+      "tab_background_text": [
+        182,
+        173,
+        171
+      ],
+      "bookmark_text": [
+        255,
+        255,
+        255
+      ],
+      "omnibox_background": [
+        73,
+        49,
+        42
+      ],
+      "omnibox_text": [
+        255,
+        255,
+        255
+      ],
+      "ntp_background": [
+        43,
+        27,
+        23
+      ],
+      "ntp_text": [
+        255,
+        255,
+        255
+      ]
+    }
+  }
+}

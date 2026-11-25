@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Dark Void",
+  "description": "Dark Void aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        8,
+        7,
+        13
+      ],
+      "frame_inactive": [
+        7,
+        6,
+        11
+      ],
+      "toolbar": [
+        18,
+        16,
+        28
+      ],
+      "tab_text": [
+        167,
+        139,
+        250
+      ],
+      "tab_background_text": [
+        107,
+        89,
+        160
+      ],
+      "bookmark_text": [
+        167,
+        139,
+        250
+      ],
+      "omnibox_background": [
+        13,
+        11,
+        20
+      ],
+      "omnibox_text": [
+        167,
+        139,
+        250
+      ],
+      "ntp_background": [
+        5,
+        4,
+        8
+      ],
+      "ntp_text": [
+        167,
+        139,
+        250
+      ]
+    }
+  }
+}

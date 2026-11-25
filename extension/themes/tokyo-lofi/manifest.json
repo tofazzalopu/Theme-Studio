@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Tokyo Lofi Rain",
+  "description": "Tokyo Lofi Rain aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        20,
+        23,
+        36
+      ],
+      "frame_inactive": [
+        16,
+        19,
+        30
+      ],
+      "toolbar": [
+        35,
+        40,
+        62
+      ],
+      "tab_text": [
+        224,
+        108,
+        117
+      ],
+      "tab_background_text": [
+        146,
+        76,
+        86
+      ],
+      "bookmark_text": [
+        224,
+        108,
+        117
+      ],
+      "omnibox_background": [
+        26,
+        30,
+        46
+      ],
+      "omnibox_text": [
+        224,
+        108,
+        117
+      ],
+      "ntp_background": [
+        13,
+        15,
+        23
+      ],
+      "ntp_text": [
+        224,
+        108,
+        117
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Charcoal Minimal",
+  "description": "Charcoal Minimal aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        38,
+        38,
+        38
+      ],
+      "frame_inactive": [
+        31,
+        31,
+        31
+      ],
+      "toolbar": [
+        51,
+        51,
+        51
+      ],
+      "tab_text": [
+        245,
+        245,
+        245
+      ],
+      "tab_background_text": [
+        166,
+        166,
+        166
+      ],
+      "bookmark_text": [
+        245,
+        245,
+        245
+      ],
+      "omnibox_background": [
+        42,
+        42,
+        42
+      ],
+      "omnibox_text": [
+        245,
+        245,
+        245
+      ],
+      "ntp_background": [
+        28,
+        28,
+        28
+      ],
+      "ntp_text": [
+        245,
+        245,
+        245
+      ]
+    }
+  }
+}

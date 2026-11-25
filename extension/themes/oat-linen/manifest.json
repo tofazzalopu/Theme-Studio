@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Oat & Linen",
+  "description": "Oat & Linen aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        214,
+        204,
+        194
+      ],
+      "frame_inactive": [
+        221,
+        215,
+        210
+      ],
+      "toolbar": [
+        245,
+        235,
+        224
+      ],
+      "tab_text": [
+        62,
+        56,
+        50
+      ],
+      "tab_background_text": [
+        120,
+        112,
+        105
+      ],
+      "bookmark_text": [
+        62,
+        56,
+        50
+      ],
+      "omnibox_background": [
+        247,
+        239,
+        230
+      ],
+      "omnibox_text": [
+        62,
+        56,
+        50
+      ],
+      "ntp_background": [
+        250,
+        246,
+        240
+      ],
+      "ntp_text": [
+        62,
+        56,
+        50
+      ]
+    }
+  }
+}

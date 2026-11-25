@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Cozy Rainy Window",
+  "description": "Rainy Window aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        51,
+        65,
+        85
+      ],
+      "frame_inactive": [
+        42,
+        53,
+        70
+      ],
+      "toolbar": [
+        71,
+        85,
+        105
+      ],
+      "tab_text": [
+        241,
+        245,
+        249
+      ],
+      "tab_background_text": [
+        169,
+        177,
+        187
+      ],
+      "bookmark_text": [
+        241,
+        245,
+        249
+      ],
+      "omnibox_background": [
+        55,
+        67,
+        87
+      ],
+      "omnibox_text": [
+        241,
+        245,
+        249
+      ],
+      "ntp_background": [
+        30,
+        41,
+        59
+      ],
+      "ntp_text": [
+        241,
+        245,
+        249
+      ]
+    }
+  }
+}

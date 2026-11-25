@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Pitch Black OLED",
+  "description": "Pitch Black OLED aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        0,
+        0,
+        0
+      ],
+      "frame_inactive": [
+        0,
+        0,
+        0
+      ],
+      "toolbar": [
+        8,
+        8,
+        8
+      ],
+      "tab_text": [
+        229,
+        229,
+        229
+      ],
+      "tab_background_text": [
+        142,
+        142,
+        142
+      ],
+      "bookmark_text": [
+        229,
+        229,
+        229
+      ],
+      "omnibox_background": [
+        5,
+        5,
+        5
+      ],
+      "omnibox_text": [
+        229,
+        229,
+        229
+      ],
+      "ntp_background": [
+        0,
+        0,
+        0
+      ],
+      "ntp_text": [
+        229,
+        229,
+        229
+      ]
+    }
+  }
+}

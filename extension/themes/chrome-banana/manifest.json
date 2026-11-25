@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Banana Yellow",
+  "description": "Banana Yellow aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        245,
+        127,
+        23
+      ],
+      "frame_inactive": [
+        242,
+        165,
+        99
+      ],
+      "toolbar": [
+        251,
+        192,
+        45
+      ],
+      "tab_text": [
+        33,
+        33,
+        33
+      ],
+      "tab_background_text": [
+        114,
+        69,
+        29
+      ],
+      "bookmark_text": [
+        33,
+        33,
+        33
+      ],
+      "omnibox_background": [
+        253,
+        216,
+        119
+      ],
+      "omnibox_text": [
+        33,
+        33,
+        33
+      ],
+      "ntp_background": [
+        255,
+        253,
+        231
+      ],
+      "ntp_text": [
+        33,
+        33,
+        33
+      ]
+    }
+  }
+}

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" id="metaThemeColor" content="#091224">
+  <title>New Tab — Theme Studio</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
+  <style>
+    :root {
+      --ntp-frame: #091224;
+      --ntp-toolbar: #152d58;
+      --ntp-text: #ffffff;
+      --ntp-bg: #0d1b2a;
+      --app-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--app-font); }
+    body {
+      min-height: 100vh;
+      color: var(--ntp-text);
+      background:
+        radial-gradient(circle at 80% 18%, color-mix(in srgb, var(--ntp-toolbar) 55%, transparent) 0%, transparent 55%),
+        radial-gradient(circle at 20% 82%, color-mix(in srgb, var(--ntp-frame) 65%, transparent) 0%, transparent 55%),
+        var(--ntp-bg);
+      display: flex;
+      flex-direction: column;
+      transition: background 0.45s ease, color 0.3s ease;
+    }
+    .ntp-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px 48px;
+      gap: 24px;
+      text-align: center;
+    }
+    .ntp-clock {
+      font-size: clamp(44px, 7vw, 72px);
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+    .ntp-date {
+      font-size: 14px;
+      opacity: 0.78;
+      margin-top: -12px;
+    }
+    .ntp-search-form {
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      align-items: center;
+      background: color-mix(in srgb, var(--ntp-toolbar) 45%, rgba(255, 255, 255, 0.08));
+      border: 1px solid color-mix(in srgb, var(--ntp-text) 18%, transparent);
+      border-radius: 9999px;
+      padding: 6px 8px 6px 18px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+    }
+    .ntp-search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--ntp-text);
+      font-size: 14px;
+    }
+    .ntp-search-input::placeholder {
+      color: color-mix(in srgb, var(--ntp-text) 60%, transparent);
+    }
+    .ntp-search-btn {
+      border: none;
+      border-radius: 9999px;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--ntp-frame);
+      color: var(--ntp-text);
+      border: 1px solid color-mix(in srgb, var(--ntp-text) 20%, transparent);
+    }
+    .ntp-wallpaper-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 0.55s ease;
+      pointer-events: none;
+    }
+    .ntp-wallpaper-layer.has-wallpaper {
+      opacity: 1;
+    }
+    .ntp-wallpaper-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.45) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .ntp-wallpaper-layer.has-wallpaper + .ntp-wallpaper-scrim {
+      opacity: 1;
+    }
+    body.wallpaper-active {
+      color: #ffffff;
+    }
+    body.wallpaper-active .ntp-clock,
+    body.wallpaper-active .ntp-date {
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+    }
+    body.wallpaper-active .ntp-site-tile {
+      color: #ffffff;
+      background: rgba(20, 22, 30, 0.48);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .ntp-main {
+      position: relative;
+      z-index: 1;
+    }
+    .ntp-most-visited {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(76px, 88px));
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+      max-width: 580px;
+      margin-top: 4px;
+    }
+    .ntp-site-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 6px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--ntp-text);
+      background: color-mix(in srgb, var(--ntp-frame) 48%, rgba(255, 255, 255, 0.06));
+      border: 1px solid color-mix(in srgb, var(--ntp-text) 12%, transparent);
+      backdrop-filter: blur(18px);
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+    .ntp-site-tile:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--ntp-text) 32%, transparent);
+      background: color-mix(in srgb, var(--ntp-toolbar) 58%, rgba(255, 255, 255, 0.1));
+    }
+    .ntp-site-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--ntp-toolbar) 65%, rgba(255, 255, 255, 0.12));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    }
+    .ntp-site-icon-wrap img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    .ntp-site-title {
+      font-size: 11px;
+      font-weight: 500;
+      max-width: 76px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0.92;
+    }
+  </style>
+</head>
+<body>
+  <div class="ntp-wallpaper-layer" id="ntpWallpaperLayer" aria-hidden="true"></div>
+  <div class="ntp-wallpaper-scrim" aria-hidden="true"></div>
+
+  <main class="ntp-main">
+    <div class="ntp-clock" id="ntpClock">--:--</div>
+    <div class="ntp-date" id="ntpDate"></div>
+
+    <form class="ntp-search-form" id="ntpSearchForm">
+      <input class="ntp-search-input" id="ntpSearchInput" type="search" placeholder="Search the web or paste a URL..." autocomplete="off">
+      <button class="ntp-search-btn" type="submit">Search</button>
+    </form>
+
+    <section class="ntp-most-visited" id="ntpMostVisited" aria-label="Most Visited Sites"></section>
+  </main>
+
+  <script type="module" src="newtab.js"></script>
+</body>
+</html>

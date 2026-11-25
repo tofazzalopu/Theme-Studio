@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Matcha Latte",
+  "description": "Matcha Latte aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        183,
+        196,
+        176
+      ],
+      "frame_inactive": [
+        201,
+        210,
+        198
+      ],
+      "toolbar": [
+        219,
+        231,
+        213
+      ],
+      "tab_text": [
+        43,
+        58,
+        39
+      ],
+      "tab_background_text": [
+        96,
+        110,
+        91
+      ],
+      "bookmark_text": [
+        43,
+        58,
+        39
+      ],
+      "omnibox_background": [
+        229,
+        238,
+        225
+      ],
+      "omnibox_text": [
+        43,
+        58,
+        39
+      ],
+      "ntp_background": [
+        244,
+        248,
+        242
+      ],
+      "ntp_text": [
+        43,
+        58,
+        39
+      ]
+    }
+  }
+}

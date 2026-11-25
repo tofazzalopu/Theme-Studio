@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Oceanic Trench",
+  "description": "Oceanic Trench aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        11,
+        37,
+        69
+      ],
+      "frame_inactive": [
+        9,
+        30,
+        57
+      ],
+      "toolbar": [
+        19,
+        64,
+        116
+      ],
+      "tab_text": [
+        141,
+        169,
+        196
+      ],
+      "tab_background_text": [
+        92,
+        119,
+        148
+      ],
+      "bookmark_text": [
+        141,
+        169,
+        196
+      ],
+      "omnibox_background": [
+        13,
+        48,
+        88
+      ],
+      "omnibox_text": [
+        141,
+        169,
+        196
+      ],
+      "ntp_background": [
+        5,
+        25,
+        45
+      ],
+      "ntp_text": [
+        141,
+        169,
+        196
+      ]
+    }
+  }
+}

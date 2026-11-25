@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Butter & Honey",
+  "description": "Butter & Honey aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        250,
+        237,
+        203
+      ],
+      "frame_inactive": [
+        245,
+        236,
+        216
+      ],
+      "toolbar": [
+        254,
+        250,
+        224
+      ],
+      "tab_text": [
+        74,
+        62,
+        27
+      ],
+      "tab_background_text": [
+        141,
+        128,
+        94
+      ],
+      "bookmark_text": [
+        74,
+        62,
+        27
+      ],
+      "omnibox_background": [
+        254,
+        251,
+        232
+      ],
+      "omnibox_text": [
+        74,
+        62,
+        27
+      ],
+      "ntp_background": [
+        255,
+        253,
+        245
+      ],
+      "ntp_text": [
+        74,
+        62,
+        27
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Morpheon Dark",
+  "description": "Morpheon Dark aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        20,
+        20,
+        20
+      ],
+      "frame_inactive": [
+        16,
+        16,
+        16
+      ],
+      "toolbar": [
+        31,
+        31,
+        31
+      ],
+      "tab_text": [
+        209,
+        213,
+        219
+      ],
+      "tab_background_text": [
+        137,
+        140,
+        143
+      ],
+      "bookmark_text": [
+        209,
+        213,
+        219
+      ],
+      "omnibox_background": [
+        26,
+        26,
+        26
+      ],
+      "omnibox_text": [
+        209,
+        213,
+        219
+      ],
+      "ntp_background": [
+        18,
+        18,
+        18
+      ],
+      "ntp_text": [
+        209,
+        213,
+        219
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Outrun 80s Grid",
+  "description": "Outrun 80s aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        24,
+        5,
+        43
+      ],
+      "frame_inactive": [
+        20,
+        4,
+        35
+      ],
+      "toolbar": [
+        59,
+        17,
+        90
+      ],
+      "tab_text": [
+        255,
+        42,
+        133
+      ],
+      "tab_background_text": [
+        167,
+        28,
+        99
+      ],
+      "bookmark_text": [
+        255,
+        42,
+        133
+      ],
+      "omnibox_background": [
+        41,
+        11,
+        65
+      ],
+      "omnibox_text": [
+        255,
+        42,
+        133
+      ],
+      "ntp_background": [
+        15,
+        2,
+        28
+      ],
+      "ntp_text": [
+        255,
+        42,
+        133
+      ]
+    }
+  }
+}

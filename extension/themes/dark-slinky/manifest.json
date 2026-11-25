@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Slinky Elegant",
+  "description": "Slinky Elegant aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        27,
+        27,
+        27
+      ],
+      "frame_inactive": [
+        22,
+        22,
+        22
+      ],
+      "toolbar": [
+        37,
+        37,
+        37
+      ],
+      "tab_text": [
+        226,
+        232,
+        240
+      ],
+      "tab_background_text": [
+        150,
+        154,
+        159
+      ],
+      "bookmark_text": [
+        226,
+        232,
+        240
+      ],
+      "omnibox_background": [
+        31,
+        31,
+        31
+      ],
+      "omnibox_text": [
+        226,
+        232,
+        240
+      ],
+      "ntp_background": [
+        22,
+        22,
+        22
+      ],
+      "ntp_text": [
+        226,
+        232,
+        240
+      ]
+    }
+  }
+}

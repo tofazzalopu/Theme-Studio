@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Golden Dunes",
+  "description": "Golden Dunes aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        61,
+        38,
+        18
+      ],
+      "frame_inactive": [
+        50,
+        31,
+        15
+      ],
+      "toolbar": [
+        94,
+        59,
+        28
+      ],
+      "tab_text": [
+        254,
+        217,
+        183
+      ],
+      "tab_background_text": [
+        181,
+        149,
+        120
+      ],
+      "bookmark_text": [
+        254,
+        217,
+        183
+      ],
+      "omnibox_background": [
+        71,
+        43,
+        20
+      ],
+      "omnibox_text": [
+        254,
+        217,
+        183
+      ],
+      "ntp_background": [
+        36,
+        20,
+        7
+      ],
+      "ntp_text": [
+        254,
+        217,
+        183
+      ]
+    }
+  }
+}

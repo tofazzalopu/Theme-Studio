@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Ocean Mist",
+  "description": "Ocean Mist aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        16,
+        42,
+        67
+      ],
+      "frame_inactive": [
+        13,
+        34,
+        55
+      ],
+      "toolbar": [
+        31,
+        78,
+        120
+      ],
+      "tab_text": [
+        159,
+        179,
+        200
+      ],
+      "tab_background_text": [
+        105,
+        127,
+        149
+      ],
+      "bookmark_text": [
+        159,
+        179,
+        200
+      ],
+      "omnibox_background": [
+        23,
+        58,
+        91
+      ],
+      "omnibox_text": [
+        159,
+        179,
+        200
+      ],
+      "ntp_background": [
+        11,
+        29,
+        48
+      ],
+      "ntp_text": [
+        159,
+        179,
+        200
+      ]
+    }
+  }
+}

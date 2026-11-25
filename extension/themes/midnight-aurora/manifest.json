@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Arctic Aurora",
+  "description": "Arctic Aurora aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        6,
+        26,
+        35
+      ],
+      "frame_inactive": [
+        5,
+        21,
+        29
+      ],
+      "toolbar": [
+        14,
+        56,
+        70
+      ],
+      "tab_text": [
+        77,
+        238,
+        234
+      ],
+      "tab_background_text": [
+        50,
+        157,
+        158
+      ],
+      "bookmark_text": [
+        77,
+        238,
+        234
+      ],
+      "omnibox_background": [
+        10,
+        40,
+        51
+      ],
+      "omnibox_text": [
+        77,
+        238,
+        234
+      ],
+      "ntp_background": [
+        4,
+        16,
+        23
+      ],
+      "ntp_text": [
+        77,
+        238,
+        234
+      ]
+    }
+  }
+}

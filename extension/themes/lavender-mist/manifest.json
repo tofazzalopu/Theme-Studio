@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Instant Theme - Lavender Mist",
+  "description": "Lavender Mist aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        216,
+        180,
+        226
+      ],
+      "frame_inactive": [
+        223,
+        199,
+        231
+      ],
+      "toolbar": [
+        236,
+        214,
+        245
+      ],
+      "tab_text": [
+        53,
+        35,
+        60
+      ],
+      "tab_background_text": [
+        115,
+        90,
+        123
+      ],
+      "bookmark_text": [
+        53,
+        35,
+        60
+      ],
+      "omnibox_background": [
+        242,
+        226,
+        248
+      ],
+      "omnibox_text": [
+        53,
+        35,
+        60
+      ],
+      "ntp_background": [
+        250,
+        244,
+        252
+      ],
+      "ntp_text": [
+        53,
+        35,
+        60
+      ]
+    }
+  }
+}

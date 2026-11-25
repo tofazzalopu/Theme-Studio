@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Strawberry Milk",
+  "description": "Strawberry Milk aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        255,
+        204,
+        213
+      ],
+      "frame_inactive": [
+        248,
+        215,
+        222
+      ],
+      "toolbar": [
+        255,
+        229,
+        236
+      ],
+      "tab_text": [
+        89,
+        13,
+        34
+      ],
+      "tab_background_text": [
+        152,
+        86,
+        102
+      ],
+      "bookmark_text": [
+        89,
+        13,
+        34
+      ],
+      "omnibox_background": [
+        255,
+        233,
+        239
+      ],
+      "omnibox_text": [
+        89,
+        13,
+        34
+      ],
+      "ntp_background": [
+        255,
+        240,
+        243
+      ],
+      "ntp_text": [
+        89,
+        13,
+        34
+      ]
+    }
+  }
+}

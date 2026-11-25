@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Cyberpunk Neon",
+  "description": "Cyberpunk Neon aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        10,
+        9,
+        21
+      ],
+      "frame_inactive": [
+        8,
+        7,
+        17
+      ],
+      "toolbar": [
+        31,
+        26,
+        58
+      ],
+      "tab_text": [
+        0,
+        240,
+        255
+      ],
+      "tab_background_text": [
+        4,
+        152,
+        166
+      ],
+      "bookmark_text": [
+        0,
+        240,
+        255
+      ],
+      "omnibox_background": [
+        21,
+        18,
+        41
+      ],
+      "omnibox_text": [
+        0,
+        240,
+        255
+      ],
+      "ntp_background": [
+        7,
+        6,
+        15
+      ],
+      "ntp_text": [
+        0,
+        240,
+        255
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Spirited Bathhouse",
+  "description": "Spirited Night aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        27,
+        28,
+        43
+      ],
+      "frame_inactive": [
+        22,
+        23,
+        35
+      ],
+      "toolbar": [
+        63,
+        46,
+        86
+      ],
+      "tab_text": [
+        249,
+        199,
+        132
+      ],
+      "tab_background_text": [
+        165,
+        134,
+        98
+      ],
+      "bookmark_text": [
+        249,
+        199,
+        132
+      ],
+      "omnibox_background": [
+        44,
+        34,
+        62
+      ],
+      "omnibox_text": [
+        249,
+        199,
+        132
+      ],
+      "ntp_background": [
+        16,
+        17,
+        26
+      ],
+      "ntp_text": [
+        249,
+        199,
+        132
+      ]
+    }
+  }
+}

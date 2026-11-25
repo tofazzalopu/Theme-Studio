@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Aesthetic - Botanical Sage",
+  "description": "Botanical Sage aesthetic theme for Chrome and Microsoft Edge.",
+  "theme": {
+    "colors": {
+      "frame": [
+        132,
+        153,
+        116
+      ],
+      "frame_inactive": [
+        168,
+        182,
+        159
+      ],
+      "toolbar": [
+        165,
+        182,
+        154
+      ],
+      "tab_text": [
+        28,
+        40,
+        23
+      ],
+      "tab_background_text": [
+        68,
+        83,
+        58
+      ],
+      "bookmark_text": [
+        28,
+        40,
+        23
+      ],
+      "omnibox_background": [
+        195,
+        207,
+        188
+      ],
+      "omnibox_text": [
+        28,
+        40,
+        23
+      ],
+      "ntp_background": [
+        240,
+        244,
+        238
+      ],
+      "ntp_text": [
+        28,
+        40,
+        23
+      ]
+    }
+  }
+}
