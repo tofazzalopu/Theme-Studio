@@ -210,7 +210,11 @@ async function applyTheme(themeId) {
     for (const stale of installedThemes.filter((t) => t.enabled)) {
       await chrome.management.setEnabled(stale.id, false).catch(() => {});
     }
-    await chrome.storage.local.set({ activeThemeId: themeId, lastSwitchedAt: Date.now() });
+    await chrome.storage.local.set({
+      activeThemeId: themeId,
+      activeExtensionId: null,
+      lastSwitchedAt: Date.now()
+    });
 
     return {
       success: false,
@@ -244,9 +248,13 @@ async function rotateQueue(reason = "Alarm") {
   const applyResult = await applyTheme(nextThemeId);
   await chrome.storage.local.set({ currentIndex: nextIndex, lastRotationTime: now, targetRotationTime });
 
+  const dbCustom = await getCustomThemesFromDB();
+  const meta = findThemeMeta(nextThemeId) || dbCustom.find((t) => t.id === nextThemeId) || null;
   broadcastToExtension({
     type: "QUEUE_ROTATED",
     themeId: nextThemeId,
+    themeName: applyResult?.name || meta?.name || nextThemeId,
+    colors: meta?.colors || null,
     currentIndex: nextIndex,
     rotationTime: now,
     targetRotationTime
@@ -431,11 +439,36 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         const mergedCustomThemes = Array.from(customMap.values());
 
         const currentlyEnabled = installedThemes.find((t) => t.enabled);
-        const enabledMeta = currentlyEnabled ? matchPresetMeta(currentlyEnabled) : null;
+        const enabledIsLiveCompanion = Boolean(currentlyEnabled?.name?.includes("Live Companion"));
+        const enabledMeta = currentlyEnabled && !enabledIsLiveCompanion ? matchPresetMeta(currentlyEnabled) : null;
+        const enabledCustom = currentlyEnabled && !enabledIsLiveCompanion && !enabledMeta
+          ? mergedCustomThemes.find(
+              (c) =>
+                c.installedExtensionId === currentlyEnabled.id ||
+                c.id === currentlyEnabled.id ||
+                normalizeStr(c.manifestName || c.name) === normalizeStr(currentlyEnabled.name)
+            )
+          : null;
 
-        // Stored activeThemeId in chrome.storage.local is authoritative so stale enabled themes never hijack selection
-        const resolvedActive = data.activeThemeId ||
-          (currentlyEnabled ? (enabledMeta ? enabledMeta.id : currentlyEnabled.id) : "DEFAULT_BROWSER");
+        let resolvedActive = data.activeThemeId || "DEFAULT_BROWSER";
+        if (currentlyEnabled && !enabledIsLiveCompanion) {
+          // A real standalone/developer browser theme is enabled in Edge/Chrome — reflect it as current
+          const liveEnabledId = enabledMeta ? enabledMeta.id : (enabledCustom ? enabledCustom.id : currentlyEnabled.id);
+          if (liveEnabledId && resolvedActive !== liveEnabledId) {
+            resolvedActive = liveEnabledId;
+            await chrome.storage.local.set({
+              activeThemeId: liveEnabledId,
+              activeExtensionId: currentlyEnabled.id
+            });
+          }
+        } else if (!currentlyEnabled && data.activeExtensionId) {
+          // Previously active standalone theme was turned off/removed externally
+          resolvedActive = "DEFAULT_BROWSER";
+          await chrome.storage.local.set({
+            activeThemeId: "DEFAULT_BROWSER",
+            activeExtensionId: null
+          });
+        }
 
         const resolvedMinutes = Number(data.intervalMinutes) || (Number(data.intervalHours) * 60) || 120;
 
@@ -484,16 +517,74 @@ chrome.management.onInstalled.addListener(async (info) => {
   }
 });
 chrome.management.onEnabled.addListener(async (info) => {
-  if (info.type === "theme") {
-    await syncInstalledThemeToLiveList(info, false);
+  if (info.type !== "theme") return;
+  if (info.name?.includes("Live Companion")) {
     await chrome.storage.local.set({ activeExtensionId: info.id });
-    broadcastToExtension({ type: "THEME_ENABLED", theme: info });
+    const { activeThemeId = "DEFAULT_BROWSER" } = await chrome.storage.local.get("activeThemeId");
+    broadcastToExtension({ type: "THEME_ENABLED", themeId: activeThemeId, extensionId: info.id, theme: info });
+    return;
   }
+
+  const resolvedId = await syncInstalledThemeToLiveList(info, false);
+  const meta = findThemeMeta(resolvedId) ||
+    (await getCustomThemesFromDB()).find((t) => t.id === resolvedId || t.installedExtensionId === info.id) ||
+    null;
+  const themeName = meta?.name || info.name;
+  const colors = meta?.colors || null;
+  const colorMode = colors?.frame ? (isColorDark(colors.frame) ? "dark" : "light") : null;
+
+  await chrome.storage.local.set({
+    activeThemeId: resolvedId || info.id,
+    activeExtensionId: info.id,
+    lastSwitchedAt: Date.now()
+  });
+  await recordThemeSelectionInDB(resolvedId || info.id, themeName, colors, colorMode);
+  broadcastToExtension({
+    type: "THEME_ENABLED",
+    themeId: resolvedId || info.id,
+    name: themeName,
+    colors,
+    extensionId: info.id,
+    theme: info
+  });
 });
-chrome.management.onDisabled.addListener((info) => {
-  if (info.type === "theme") broadcastToExtension({ type: "THEME_DISABLED", theme: info });
+
+chrome.management.onDisabled.addListener(async (info) => {
+  if (info.type !== "theme") return;
+  setTimeout(async () => {
+    const installed = (await chrome.management.getAll()).filter((i) => i.type === "theme");
+    const activeExt = installed.find((i) => i.enabled);
+    const { activeExtensionId } = await chrome.storage.local.get("activeExtensionId");
+    if (!activeExt && activeExtensionId === info.id) {
+      await chrome.storage.local.set({ activeThemeId: "DEFAULT_BROWSER", activeExtensionId: null });
+      await recordThemeSelectionInDB("DEFAULT_BROWSER", "Default Browser", {
+        frame: "#e5e5ea", toolbar: "#ffffff", text: "#1d1d1f", ntp: "#f5f5f7"
+      }, "light");
+      broadcastToExtension({ type: "THEME_DISABLED", themeId: "DEFAULT_BROWSER", theme: info });
+    } else {
+      broadcastToExtension({ type: "THEME_DISABLED", theme: info });
+    }
+  }, 150);
 });
-chrome.management.onUninstalled.addListener((id) => {
+
+chrome.management.onUninstalled.addListener(async (id) => {
+  const { activeExtensionId, themeQueue = [], syncedLiveThemeIds = [] } = await chrome.storage.local.get([
+    "activeExtensionId",
+    "themeQueue",
+    "syncedLiveThemeIds"
+  ]);
+  const patch = {
+    themeQueue: Array.isArray(themeQueue) ? themeQueue.filter((qId) => qId !== id) : themeQueue,
+    syncedLiveThemeIds: Array.isArray(syncedLiveThemeIds) ? syncedLiveThemeIds.filter((sId) => sId !== id) : syncedLiveThemeIds
+  };
+  if (activeExtensionId === id) {
+    patch.activeThemeId = "DEFAULT_BROWSER";
+    patch.activeExtensionId = null;
+    await recordThemeSelectionInDB("DEFAULT_BROWSER", "Default Browser", {
+      frame: "#e5e5ea", toolbar: "#ffffff", text: "#1d1d1f", ntp: "#f5f5f7"
+    }, "light");
+  }
+  await chrome.storage.local.set(patch);
   broadcastToExtension({ type: "THEME_UNINSTALLED", themeId: id });
 });
 

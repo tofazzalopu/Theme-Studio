@@ -55,7 +55,8 @@ let appState = {
   targetRotationTime: Date.now() + 7200000,
   themeQueue: ["DEFAULT_BROWSER", "preset-aurora", "preset-midsummer", "preset-nebula"],
   customThemes: [],
-  devMode: false
+  devMode: false,
+  hasLoadedInitialState: false
 };
 
 // Universal Extension/Localhost Communication Layer
@@ -233,12 +234,21 @@ async function start() {
         appState.targetRotationTime = msg.targetRotationTime ?? appState.targetRotationTime;
         const cardData = GALLERY_PRESETS.find((p) => p.id === msg.themeId) ||
           (appState.customThemes || []).find((t) => t.id === msg.themeId);
-        if (cardData) {
-          appState.activeThemeId = cardData.id;
-          updateActiveBadge(cardData.name);
-          syncTabBarAndColorMode(cardData.colors, null, cardData.id === "DEFAULT_BROWSER");
-          renderGallery();
-        }
+        appState.activeThemeId = cardData ? cardData.id : msg.themeId;
+        const resolvedName = cardData?.name || msg.themeName || msg.themeId;
+        const resolvedColors = cardData?.colors || msg.colors || null;
+        CookieStore.set("active_theme_id", appState.activeThemeId);
+        CookieStore.set("active_theme_name", resolvedName);
+        if (resolvedColors) CookieStore.setJSON("active_theme_colors", resolvedColors);
+        updateCachedUserSettings({
+          activeThemeId: appState.activeThemeId,
+          activeThemeName: resolvedName,
+          colors: resolvedColors
+        });
+        updateActiveBadge(resolvedName);
+        syncTabBarAndColorMode(resolvedColors, null, appState.activeThemeId === "DEFAULT_BROWSER");
+        await refreshState();
+        renderGallery();
         renderScheduler();
         updateCountdownDisplay();
       }
@@ -273,6 +283,9 @@ async function start() {
       if (schedDirty) {
         renderScheduler();
         updateCountdownDisplay();
+      }
+      if (changes.activeThemeId?.newValue) {
+        refreshState().then(() => renderGallery());
       }
     });
   }
@@ -337,7 +350,9 @@ async function refreshState() {
         ...appState,
         ...response,
         customThemes: Array.from(existingCustomMap.values()),
-        activeThemeId: response.activeThemeId || cookieThemeId || appState.activeThemeId,
+        activeThemeId: hasChromeRuntime
+          ? (response.activeThemeId || cookieThemeId || appState.activeThemeId)
+          : (cookieThemeId || response.activeThemeId || appState.activeThemeId),
         themeQueue: resolvedQueue,
         intervalMinutes: resolvedMinutes,
         intervalHours: resolvedMinutes / 60,
@@ -345,21 +360,9 @@ async function refreshState() {
         currentIndex: response.currentIndex ?? appState.currentIndex,
         lastRotationTime: response.lastRotationTime || Date.now(),
         targetRotationTime: response.targetRotationTime || (Date.now() + resolvedMinutes * 60000),
-        devMode: CookieStore.get("dev_mode_enabled") === "true" || false
+        devMode: CookieStore.get("dev_mode_enabled") === "true" || false,
+        hasLoadedInitialState: true
       };
-
-      // Sync cookies & local cache to match authoritative state across windows
-      CookieStore.set("schedule_interval_minutes", appState.intervalMinutes);
-      CookieStore.set("schedule_interval_hours", appState.intervalHours);
-      CookieStore.set("schedule_enabled", appState.scheduleEnabled ? "true" : "false");
-      updateCachedUserSettings({
-        activeThemeId: appState.activeThemeId,
-        scheduleEnabled: appState.scheduleEnabled,
-        intervalMinutes: appState.intervalMinutes,
-        intervalHours: appState.intervalHours,
-        themeQueue: appState.themeQueue,
-        devMode: appState.devMode
-      });
 
       // Match installed Chromium/Edge themes to GALLERY_PRESETS & appState.customThemes
       GALLERY_PRESETS.forEach(p => {
@@ -373,8 +376,10 @@ async function refreshState() {
         ct.isEnabled = false;
       });
 
+      let enabledThemeEntry = null;
       if (Array.isArray(appState.installedThemes)) {
         appState.installedThemes.forEach(t => {
+          const isRealEnabled = Boolean(t.enabled && !t.name.includes("Live Companion"));
           let matchedPreset = GALLERY_PRESETS.find(p => p.id === t.presetId);
           if (!matchedPreset) {
             matchedPreset = GALLERY_PRESETS.find(p => {
@@ -389,9 +394,7 @@ async function refreshState() {
             matchedPreset.isInstalled = true;
             matchedPreset.installedExtensionId = t.id;
             matchedPreset.isEnabled = Boolean(t.enabled);
-            if (t.enabled && (!appState.activeThemeId || appState.activeThemeId === "DEFAULT_BROWSER") && !cookieThemeId) {
-              appState.activeThemeId = matchedPreset.id;
-            }
+            if (isRealEnabled) enabledThemeEntry = matchedPreset;
           } else {
             const matchedCustom = (appState.customThemes || []).find(
               c => c.id === t.presetId || c.installedExtensionId === t.id || normalizeStr(c.manifestName || c.name) === normalizeStr(t.name)
@@ -400,22 +403,54 @@ async function refreshState() {
               matchedCustom.isInstalled = true;
               matchedCustom.installedExtensionId = t.id;
               matchedCustom.isEnabled = Boolean(t.enabled);
+              if (isRealEnabled) enabledThemeEntry = matchedCustom;
+            } else if (isRealEnabled) {
+              enabledThemeEntry = { id: t.id, name: t.name, colors: null };
             }
           }
         });
       }
 
-      if (appState.activeThemeId === "DEFAULT_BROWSER") {
-        updateActiveBadge("Default Browser");
-      } else {
-        const currentActive = GALLERY_PRESETS.find(p => p.id === appState.activeThemeId) ||
-          (appState.customThemes || []).find(c => c.id === appState.activeThemeId);
-        if (currentActive) {
-          updateActiveBadge(currentActive.name);
-        }
+      if (hasChromeRuntime && enabledThemeEntry && enabledThemeEntry.id) {
+        appState.activeThemeId = enabledThemeEntry.id;
       }
+
+      // Sync active theme badge, cookies, and local cache to match authoritative state
+      const currentActive = GALLERY_PRESETS.find(p => p.id === appState.activeThemeId) ||
+        (appState.customThemes || []).find(c => c.id === appState.activeThemeId) ||
+        (appState.installedThemes || []).find(t => t.id === appState.activeThemeId || t.presetId === appState.activeThemeId);
+
+      const activeDisplayName = appState.activeThemeId === "DEFAULT_BROWSER"
+        ? "Default Browser"
+        : (currentActive?.name || appState.activeThemeId);
+      const activeColors = currentActive?.colors || null;
+
+      CookieStore.set("active_theme_id", appState.activeThemeId);
+      CookieStore.set("active_theme_name", activeDisplayName);
+      if (activeColors) CookieStore.setJSON("active_theme_colors", activeColors);
+      CookieStore.set("schedule_interval_minutes", appState.intervalMinutes);
+      CookieStore.set("schedule_interval_hours", appState.intervalHours);
+      CookieStore.set("schedule_enabled", appState.scheduleEnabled ? "true" : "false");
+      updateCachedUserSettings({
+        activeThemeId: appState.activeThemeId,
+        activeThemeName: activeDisplayName,
+        colors: activeColors,
+        scheduleEnabled: appState.scheduleEnabled,
+        intervalMinutes: appState.intervalMinutes,
+        intervalHours: appState.intervalHours,
+        themeQueue: appState.themeQueue,
+        devMode: appState.devMode
+      });
+
+      updateActiveBadge(activeDisplayName);
+      syncTabBarAndColorMode(
+        activeColors,
+        hasChromeRuntime ? (response.colorMode || appState.colorMode || null) : (appState.colorMode || null),
+        appState.activeThemeId === "DEFAULT_BROWSER"
+      );
     }
   } catch (err) {
+    appState.hasLoadedInitialState = true;
     console.error("Failed to query extension state:", err);
   }
 }
@@ -462,6 +497,64 @@ function setupTabNavigation() {
       if (activePanel) activePanel.classList.add("active");
     }
   }
+}
+
+async function handleDeleteCustomTheme(cardData) {
+  if (!cardData?.id) return;
+
+  await deleteCustomThemeFromDB(cardData.id);
+  appState.customThemes = (appState.customThemes || []).filter((t) => t.id !== cardData.id);
+
+  // Disable installed extension variant if enabled so browser doesn't stay stuck on deleted theme
+  if (cardData.installedExtensionId && typeof chrome !== "undefined" && chrome.management) {
+    try {
+      const extInfo = await chrome.management.get(cardData.installedExtensionId);
+      if (extInfo?.enabled) {
+        await chrome.management.setEnabled(cardData.installedExtensionId, false);
+      }
+    } catch (_) {}
+  }
+
+  // Remove deleted theme (both studio id and extension id) from scheduler queue if present
+  const idsToRemove = new Set([cardData.id, cardData.installedExtensionId].filter(Boolean));
+  if (Array.isArray(appState.themeQueue) && appState.themeQueue.some((id) => idsToRemove.has(id))) {
+    appState.themeQueue = appState.themeQueue.filter((id) => !idsToRemove.has(id));
+    if (appState.currentIndex >= appState.themeQueue.length) {
+      appState.currentIndex = 0;
+    }
+    CookieStore.setJSON("theme_rotation_queue", appState.themeQueue);
+    updateCachedUserSettings({ themeQueue: appState.themeQueue });
+    await sendExtensionMessage({
+      type: "UPDATE_QUEUE",
+      themeQueue: appState.themeQueue,
+      currentIndex: appState.currentIndex
+    });
+  }
+
+  // Revert to browser default if deleted theme was currently active or enabled in Edge
+  if (appState.activeThemeId === cardData.id || cardData.isEnabled) {
+    appState.activeThemeId = "DEFAULT_BROWSER";
+    CookieStore.set("active_theme_id", "DEFAULT_BROWSER");
+    CookieStore.set("active_theme_name", "Default Browser");
+    updateCachedUserSettings({ activeThemeId: "DEFAULT_BROWSER", activeThemeName: "Default Browser", colors: null });
+    updateActiveBadge("Default Browser");
+    syncTabBarAndColorMode(null, null, true);
+    await applyNativeTabBarTheme("default", "Default Browser");
+  }
+
+  await loadCustomThemesIntoApp();
+  if (currentCategory === "custom" && appState.customThemes.length === 0) {
+    currentCategory = "all";
+    document.querySelectorAll(".cat-pill").forEach((b) => {
+      b.classList.toggle("active", b.dataset.category === "all");
+    });
+    CookieStore.set("active_gallery_category", "all");
+  }
+
+  renderGallery();
+  renderScheduler();
+  updateLiveSyncStatus();
+  showToast(`Removed "${cardData.name}" from My Studio`);
 }
 
 // Render Gallery Cards with Category & Search Filtering (or Wallpapers Studio View)
@@ -569,6 +662,22 @@ function renderGallery() {
       installedBadge.title = "Installed in Microsoft Edge";
       installedBadge.innerHTML = `<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> In Edge`;
       cardEl.appendChild(installedBadge);
+    }
+
+    // Delete option for uploaded / saved My Studio themes
+    if (cardData.isCustom) {
+      cardEl.classList.add("has-delete");
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "card-delete-btn";
+      delBtn.title = `Delete "${cardData.name}" from My Studio`;
+      delBtn.setAttribute("aria-label", `Delete ${cardData.name} from My Studio`);
+      delBtn.innerHTML = "&times;";
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        await handleDeleteCustomTheme(cardData);
+      });
+      cardEl.appendChild(delBtn);
     }
 
     // Bottom label pill
@@ -1693,7 +1802,6 @@ function setupCustomizer() {
   const fileInput = document.getElementById("themeFileInput");
   const compileBtn = document.getElementById("validateCompileBtn");
   const applyCustomBtn = document.getElementById("applyCustomThemeBtn");
-  const devPanelBtn = document.getElementById("installCustomDevPanelBtn");
   const scanFolderBtn = document.getElementById("btnScanThemeFolder");
   const openTabBtn = document.getElementById("btnOpenImporterWindow");
 
@@ -1845,23 +1953,6 @@ function setupCustomizer() {
     });
   }
 
-  // Save to Studio, Package Unpacked ZIP/Disk Folder & Open Extension Developer Panel
-  if (devPanelBtn) {
-    devPanelBtn.addEventListener("click", async () => {
-      try {
-        const saved = await addDesignerThemeToStudio(false);
-        downloadSingleThemeZip({
-          folder: saved.folder,
-          manifestName: saved.manifestName,
-          cardData: saved
-        });
-        await sendExtensionMessage({ type: "OPEN_EXTENSIONS_PAGE" });
-        showToast(`✓ Downloaded theme-${saved.folder}.zip — turn Developer mode ON and Load unpacked!`);
-      } catch (err) {
-        showToast(`Developer install error: ${err.message || err}`);
-      }
-    });
-  }
 }
 
 async function findManifestInDirHandle(dirHandle, depth = 0) {
@@ -2957,8 +3048,9 @@ function updateCountdownDisplay() {
   const pct = Math.min(100, Math.max(0, (elapsedMs / totalDurationMs) * 100));
   if (fill) fill.style.width = `${pct.toFixed(1)}%`;
 
-  // When timer reaches 0, advance to next theme!
-  if (remainingMs <= 0 && appState.scheduleEnabled) {
+  // When timer reaches 0 (and initial state has synced), advance to next theme once
+  if (remainingMs <= 0 && appState.scheduleEnabled && appState.hasLoadedInitialState !== false) {
+    appState.targetRotationTime = now + totalDurationMs;
     advanceQueueTheme();
   }
 }
@@ -2969,6 +3061,15 @@ async function advanceQueueTheme() {
   if (isRotating) return;
   isRotating = true;
   try {
+    if (typeof chrome !== "undefined" && chrome.runtime?.id) {
+      await sendExtensionMessage({ type: "NEXT_QUEUE_THEME" });
+      await refreshState();
+      renderGallery();
+      renderScheduler();
+      updateCountdownDisplay();
+      return;
+    }
+
     const queue = Array.isArray(appState.themeQueue) && appState.themeQueue.length > 0
       ? appState.themeQueue
       : ["DEFAULT_BROWSER", "preset-aurora", "preset-midsummer", "preset-nebula"];
@@ -2980,10 +3081,11 @@ async function advanceQueueTheme() {
     appState.lastRotationTime = Date.now();
     appState.targetRotationTime = Date.now() + ((appState.intervalMinutes || 120) * 60 * 1000);
 
-    const cardData = GALLERY_PRESETS.find(p => p.id === nextThemeId) || {
-      id: nextThemeId,
-      name: nextThemeId
-    };
+    const cardData = GALLERY_PRESETS.find(p => p.id === nextThemeId) ||
+      (appState.customThemes || []).find(t => t.id === nextThemeId) || {
+        id: nextThemeId,
+        name: nextThemeId
+      };
 
     await handleThemeSelect(cardData);
     renderScheduler();

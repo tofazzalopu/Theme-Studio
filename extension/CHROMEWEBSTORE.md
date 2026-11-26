@@ -97,5 +97,5 @@ Included in `extension/PRIVACY_POLICY.md`.
 
 ## Developer Info
 - **Publisher Name**: Theme Studio
-- **Contact Email**: `support@instantthemechanger.local`
+- **Contact Email**: `agentopu@gmail.com`
 - **Support URL**: `https://github.com/tofazzalopu/Theme-Studio/issues`

@@ -222,10 +222,16 @@ async function initNewTab() {
   if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
     chrome.runtime.onMessage.addListener(async (msg) => {
       if (msg?.type === "QUEUE_ROTATED" || msg?.type === "THEME_ENABLED") {
-        const m = resolveThemeById(msg.themeId);
-        if (m) applyNtpVisuals(m.id, m.name, m.colors, currentColorMode);
+        customThemesCache = await getCustomThemesFromDB();
+        const tid = msg.themeId || msg.theme?.id;
+        const m = resolveThemeById(tid);
+        const colors = msg.colors || m?.colors || null;
+        const name = msg.themeName || msg.name || m?.name || msg.theme?.name || tid;
+        if (tid || m) applyNtpVisuals(tid || m.id, name, colors, currentColorMode);
       } else if (msg?.type === "THEME_DISABLED") {
-        applyNtpVisuals("DEFAULT_BROWSER", "Default Browser", null, currentColorMode);
+        if (msg.themeId === "DEFAULT_BROWSER" || !msg.themeId) {
+          applyNtpVisuals("DEFAULT_BROWSER", "Default Browser", null, currentColorMode);
+        }
       } else if (msg?.type === "WALLPAPER_ROTATED") {
         await applyActiveWallpaper();
       }

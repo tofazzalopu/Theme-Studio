@@ -232,7 +232,7 @@ export const CookieStore = {
         const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
         if (match) return decodeURIComponent(match[1]);
       }
-    } catch (_) {}
+    } catch (_) { }
     try {
       return typeof localStorage !== "undefined" ? localStorage.getItem(name) : null;
     } catch (_) {
@@ -244,20 +244,20 @@ export const CookieStore = {
       if (typeof document !== "undefined") {
         document.cookie = `${name}=${encodeURIComponent(String(value))}; max-age=${days * 86400}; path=/; SameSite=Lax`;
       }
-    } catch (_) {}
+    } catch (_) { }
     try {
       if (typeof localStorage !== "undefined") localStorage.setItem(name, String(value));
-    } catch (_) {}
+    } catch (_) { }
   },
   remove(name) {
     try {
       if (typeof document !== "undefined") {
         document.cookie = `${name}=; max-age=0; path=/; SameSite=Lax`;
       }
-    } catch (_) {}
+    } catch (_) { }
     try {
       if (typeof localStorage !== "undefined") localStorage.removeItem(name);
-    } catch (_) {}
+    } catch (_) { }
   },
   getJSON(name, fallback = null) {
     const raw = this.get(name);
@@ -271,7 +271,7 @@ export const CookieStore = {
   setJSON(name, value, days = 365) {
     try {
       this.set(name, JSON.stringify(value), days);
-    } catch (_) {}
+    } catch (_) { }
   }
 };
 
