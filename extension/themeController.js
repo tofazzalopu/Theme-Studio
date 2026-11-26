@@ -83,22 +83,23 @@ export async function applyNativeTabBarTheme(themeKeyOrObj, customName, explicit
     });
 
     if (installedTheme) {
-      await chrome.management.setEnabled(installedTheme.id, true);
       if (chrome.storage) {
         await chrome.storage.local.set({
           activeThemeId: targetId,
-          activeExtensionId: installedTheme.id
+          activeExtensionId: installedTheme.id,
+          lastSwitchedAt: Date.now()
         });
       }
+      await chrome.management.setEnabled(installedTheme.id, true);
       return { status: "applied_instantly", name: installedTheme.name, id: installedTheme.id, colorMode: derivedColorMode };
     }
 
-    // Disable any previously enabled static theme when switching to a theme not installed standalone
-    for (const stale of extensions.filter((ext) => ext.type === "theme" && ext.enabled && !ext.name.includes("Live Companion"))) {
-      await chrome.management.setEnabled(stale.id, false);
-    }
+    // Clear activeExtensionId BEFORE disabling stale themes so onDisabled doesn't reset activeThemeId back to DEFAULT
     if (chrome.storage) {
       await chrome.storage.local.set({ activeExtensionId: null });
+    }
+    for (const stale of extensions.filter((ext) => ext.type === "theme" && ext.enabled && !ext.name.includes("Live Companion"))) {
+      await chrome.management.setEnabled(stale.id, false);
     }
   }
 

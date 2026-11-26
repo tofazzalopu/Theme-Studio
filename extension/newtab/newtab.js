@@ -187,8 +187,9 @@ async function initNewTab() {
   }
 
   const activeId = storageState.activeThemeId || dbState?.activeThemeId || cached.activeThemeId || "DEFAULT_BROWSER";
-  const activeName = storageState.activeThemeName || dbState?.activeThemeName || cached.activeThemeName || "Default Browser";
-  const activeColors = storageState.activeThemeColors || dbState?.colors || cached.colors || null;
+  const matchedMeta = resolveThemeById(activeId);
+  const activeName = storageState.activeThemeName || matchedMeta?.name || dbState?.activeThemeName || cached.activeThemeName || "Default Browser";
+  const activeColors = matchedMeta?.colors || storageState.activeThemeColors || dbState?.colors || cached.colors || null;
   const colorMode = storageState.colorMode || dbState?.colorMode || cached.colorMode || "dark";
 
   updateCachedUserSettings({
@@ -205,6 +206,7 @@ async function initNewTab() {
     if (ev.type === "COLOR_MODE_CHANGED" && ev.colorMode) {
       applyNtpVisuals(currentThemeId, null, null, ev.colorMode);
     } else if (ev.type === "DB_STATE_CHANGED" && ev.state) {
+      customThemesCache = await getCustomThemesFromDB();
       const m = resolveThemeById(ev.state.activeThemeId);
       applyNtpVisuals(
         ev.state.activeThemeId,
@@ -216,6 +218,9 @@ async function initNewTab() {
       await applyActiveWallpaper();
     } else if (ev.type === "CUSTOM_THEMES_CHANGED") {
       customThemesCache = await getCustomThemesFromDB();
+    } else if (ev.type === "FULL_DATA_RESET") {
+      customThemesCache = [];
+      applyNtpVisuals("DEFAULT_BROWSER", "Default Browser", null, "dark");
     }
   });
 

@@ -4,6 +4,8 @@
  * paired live-theme folder handle, and Chromium hot-reload.
  */
 
+import { CookieStore } from "./sharedUtils.js";
+
 const DB_NAME = "ThemeStudioDB";
 const DB_VERSION = 3;
 const STORE_HANDLES = "handles";
@@ -18,6 +20,11 @@ const KEY_WALLPAPER_STATE = "wallpaper_settings";
 
 export const LIVE_THEME_NAME = "Theme Studio - Live Companion";
 export const USER_CACHE_KEY = "theme_studio_user_cache";
+export const THEMES_COOKIE_KEY = "theme_studio_themes_json";
+export const STUDIO_DATA_VERSION = "2.0-fresh";
+export const DEFAULT_ROTATION_QUEUE = ["DEFAULT_BROWSER", "preset-aurora", "preset-midsummer", "preset-nebula"];
+export const DEFAULT_COLORS = { frame: "#e5e5ea", toolbar: "#ffffff", text: "#1d1d1f", ntp: "#f5f5f7" };
+const DELETED_THEMES_COOKIE_KEY = "theme_studio_deleted_ids";
 
 /**
  * Synchronous local browser settings/mode cache (localStorage) for instant
@@ -200,11 +207,14 @@ export async function recordThemeSelectionInDB(themeId, themeName, colors = null
     const cached = getCachedUserSettings();
     const resolvedMode = colorMode || prevState?.colorMode || cached.colorMode || "dark";
 
+    const sameTheme = prevState?.activeThemeId === themeId;
+    const resolvedColors = colors || (sameTheme ? prevState?.colors : null) || null;
+
     const nextState = {
       key: KEY_STATE,
       activeThemeId: themeId,
       activeThemeName: themeName || themeId,
-      colors: colors || prevState?.colors || null,
+      colors: resolvedColors,
       colorMode: resolvedMode,
       updatedAt: now
     };
@@ -258,7 +268,7 @@ export async function recordThemeSelectionInDB(themeId, themeName, colors = null
     updateCachedUserSettings({
       activeThemeId: themeId,
       activeThemeName: themeName || themeId,
-      colors: colors || prevState?.colors || null,
+      colors: resolvedColors,
       colorMode: resolvedMode
     });
 
@@ -267,7 +277,7 @@ export async function recordThemeSelectionInDB(themeId, themeName, colors = null
         activeThemeId: themeId,
         activeThemeName: themeName || themeId,
         colorMode: resolvedMode,
-        activeThemeColors: colors || prevState?.colors || null
+        activeThemeColors: resolvedColors
       });
     }
 
@@ -398,18 +408,11 @@ export async function findLiveCompanionTheme() {
     const items = await chrome.management.getAll();
     const themes = items.filter((ext) => ext.type === "theme");
 
-    // 1. Exact Live Companion match (including dynamic suffix like "Theme Studio - Live Companion (Aurora)")
-    const direct = themes.find(
-      (ext) => ext.name === LIVE_THEME_NAME || ext.name.includes("Live Companion")
+    // Strictly match genuine Live Companion packages (never hijack unrelated custom/developer themes)
+    return (
+      themes.find((ext) => ext.name === LIVE_THEME_NAME || ext.name.includes("Live Companion")) ||
+      null
     );
-    if (direct) return direct;
-
-    // 2. Custom unpacked companion folder that is NOT one of the individual static theme packages
-    const staticPrefixes = ["Instant Theme - ", "Aesthetic - ", "Chrome Theme - "];
-    const customDev = themes.find(
-      (ext) => ext.installType === "development" && !staticPrefixes.some((p) => ext.name.startsWith(p))
-    );
-    return customDev || null;
   } catch (err) {
     console.debug("[Live Theme Store] management query error:", err);
     return null;
@@ -419,8 +422,11 @@ export async function findLiveCompanionTheme() {
 export async function hotReloadLiveTheme(liveThemeId) {
   if (typeof chrome === "undefined" || !chrome.management) return false;
   try {
-    await chrome.management.setEnabled(liveThemeId, false);
-    await chrome.management.setEnabled(liveThemeId, true);
+    // Switching directly without setEnabled(false) first prevents jarring white/dark flash on the Tab Bar
+    const info = await chrome.management.get(liveThemeId).catch(() => null);
+    if (info && !info.enabled) {
+      await chrome.management.setEnabled(liveThemeId, true);
+    }
     return true;
   } catch (err) {
     console.error("[Live Theme Store] Hot-reload error:", err);
@@ -428,25 +434,256 @@ export async function hotReloadLiveTheme(liveThemeId) {
   }
 }
 
+async function getThemesRootDir(dirHandle) {
+  if (!dirHandle) return null;
+  return dirHandle.name?.toLowerCase() === "themes"
+    ? dirHandle
+    : await dirHandle.getDirectoryHandle("themes", { create: true });
+}
+
+async function writeTextFileInDir(dirHandle, filename, content) {
+  const fh = await dirHandle.getFileHandle(filename, { create: true });
+  const w = await fh.createWritable();
+  await w.write(content);
+  await w.close();
+}
+
+function parseThemeColorsFromManifestText(rawText) {
+  try {
+    const parsed = JSON.parse(rawText);
+    const c = parsed?.theme?.colors;
+    if (!c) return null;
+    const toHex = (arr, fallback) => {
+      if (!Array.isArray(arr) || arr.length < 3) return fallback;
+      return "#" + [arr[0], arr[1], arr[2]].map((n) => Math.max(0, Math.min(255, Math.round(Number(n) || 0))).toString(16).padStart(2, "0")).join("");
+    };
+    const frame = toHex(c.frame || c.frame_inactive, "#2c2c2e");
+    const toolbar = toHex(c.toolbar || c.frame, frame);
+    const text = toHex(c.tab_text || c.bookmark_text || c.ntp_text, "#ffffff");
+    const ntp = toHex(c.ntp_background || c.toolbar, toolbar);
+    return { parsed, colors: { frame, toolbar, text, ntp }, manifestJson: rawText };
+  } catch (_) {
+    return null;
+  }
+}
+
+export async function readThemeManifestFromThemesFolders(themeName) {
+  if (!themeName) return null;
+  const slug = String(themeName).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const normTarget = String(themeName).toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  // 1. Check authorized paired local themes directories (written during Customizer upload)
+  const dirs = [await getLocalStorageDirHandle(), await getLiveDirectoryHandle()].filter(Boolean);
+  for (const dirHandle of dirs) {
+    try {
+      const ok = await verifyPermission(dirHandle, false, false);
+      if (!ok) continue;
+      const themesRoot = dirHandle.name?.toLowerCase() === "themes"
+        ? dirHandle
+        : await dirHandle.getDirectoryHandle("themes", { create: false }).catch(() => null);
+      if (!themesRoot) continue;
+
+      if (slug) {
+        const directSub = await themesRoot.getDirectoryHandle(slug, { create: false }).catch(() => null);
+        if (directSub) {
+          const fh = await directSub.getFileHandle("manifest.json", { create: false }).catch(() => null);
+          if (fh) {
+            const res = parseThemeColorsFromManifestText(await (await fh.getFile()).text());
+            if (res) return { ...res, folder: slug };
+          }
+        }
+      }
+
+      for await (const [entryName, handle] of themesRoot.entries()) {
+        if (handle.kind !== "directory") continue;
+        const fh = await handle.getFileHandle("manifest.json", { create: false }).catch(() => null);
+        if (!fh) continue;
+        const res = parseThemeColorsFromManifestText(await (await fh.getFile()).text());
+        const mNorm = String(res?.parsed?.name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (res && mNorm && mNorm === normTarget) {
+          return { ...res, folder: entryName };
+        }
+      }
+    } catch (_) {}
+  }
+
+  // 2. Check bundled extension/themes/<slug>/manifest.json if present inside the extension package
+  if (slug && typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    try {
+      const resp = await fetch(chrome.runtime.getURL(`themes/${slug}/manifest.json`));
+      if (resp.ok) {
+        const res = parseThemeColorsFromManifestText(await resp.text());
+        if (res) return { ...res, folder: slug };
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
+export async function writeSingleCustomThemeToPairedDirs(themeObj) {
+  if (!themeObj?.folder || !themeObj?.manifestJson) return 0;
+  let writtenCount = 0;
+  const dirs = [await getLocalStorageDirHandle(), await getLiveDirectoryHandle()].filter(Boolean);
+  for (const dirHandle of dirs) {
+    try {
+      const ok = await verifyPermission(dirHandle, true, false);
+      if (!ok) continue;
+      const themesRoot = await getThemesRootDir(dirHandle);
+      const subDir = await themesRoot.getDirectoryHandle(themeObj.folder, { create: true });
+      await writeTextFileInDir(subDir, "manifest.json", themeObj.manifestJson);
+      writtenCount += 1;
+    } catch (_) {}
+  }
+  return writtenCount;
+}
+
+export async function syncAllThemesToPairedDir(themesList, createManifestFn) {
+  const dirHandle = (await getLocalStorageDirHandle()) || (await getLiveDirectoryHandle());
+  if (!dirHandle) return { ok: false, reason: "no_dir", count: 0 };
+  const ok = await verifyPermission(dirHandle, true, true);
+  if (!ok) return { ok: false, reason: "no_permission", count: 0 };
+
+  const themesRoot = await getThemesRootDir(dirHandle);
+  let count = 0;
+  for (const item of themesList || []) {
+    if (!item || item.isDefault || !item.folder || item.folder === "developer-unpacked") continue;
+    try {
+      const jsonStr = item.manifestJson || createManifestFn(item.folder, item.manifestName || item.name);
+      const subDir = await themesRoot.getDirectoryHandle(item.folder, { create: true });
+      await writeTextFileInDir(subDir, "manifest.json", jsonStr);
+      count += 1;
+    } catch (_) {}
+  }
+  return { ok: true, count, folderName: dirHandle.name || "themes" };
+}
+
 // ============================================================================
 // CUSTOM THEMES STUDIO PERSISTENCE (IndexedDB + Local Device Sync)
 // ============================================================================
 
+function mergeCustomThemeRecords(base, incoming) {
+  if (!base) return incoming;
+  if (!incoming) return base;
+  const pickColors = () => {
+    if (incoming.colors && !incoming._isFallbackColors) return incoming.colors;
+    if (base.colors && !base._isFallbackColors) return base.colors;
+    return incoming.colors || base.colors || null;
+  };
+  const colors = pickColors();
+  return {
+    ...base,
+    ...incoming,
+    id: incoming.id || base.id,
+    folder: incoming.folder && incoming.folder !== "custom-theme" ? incoming.folder : (base.folder || incoming.folder),
+    name: incoming.name && incoming.name !== "Custom Theme" ? incoming.name : (base.name || incoming.name),
+    manifestName: incoming.manifestName || base.manifestName || incoming.name || base.name,
+    category: "custom",
+    cssClass: incoming.cssClass || base.cssClass || "theme-card-custom",
+    iconType: incoming.iconType || base.iconType || "palette",
+    isCustom: true,
+    installedExtensionId: incoming.installedExtensionId ?? base.installedExtensionId ?? null,
+    isInstalled: Boolean(incoming.isInstalled || base.isInstalled || incoming.installedExtensionId || base.installedExtensionId),
+    manifestJson: incoming.manifestJson || base.manifestJson || null,
+    colors,
+    _isFallbackColors: Boolean((incoming._isFallbackColors && !base.colors) || (!colors))
+  };
+}
+
+async function getDeletedCustomThemeIds() {
+  const cookieList = CookieStore.getJSON(DELETED_THEMES_COOKIE_KEY, []);
+  const set = new Set(Array.isArray(cookieList) ? cookieList : []);
+  if (typeof chrome !== "undefined" && chrome.storage?.local) {
+    try {
+      const { deletedCustomThemeIds = [] } = await chrome.storage.local.get("deletedCustomThemeIds");
+      for (const id of deletedCustomThemeIds) set.add(id);
+    } catch (_) {}
+  }
+  return set;
+}
+
 export async function getCustomThemesFromDB() {
-  const all = await getAllThemesFromDB();
-  return all.filter((t) => t && t.isCustom);
+  const deletedIds = await getDeletedCustomThemeIds();
+  const mergedMap = new Map();
+
+  const ingest = (list) => {
+    if (!Array.isArray(list)) return;
+    for (const t of list) {
+      if (!t || !t.id || deletedIds.has(t.id)) continue;
+      if (!t.isCustom && !String(t.id).startsWith("custom-") && !t.manifestJson) continue;
+      const existing = mergedMap.get(t.id);
+      mergedMap.set(t.id, mergeCustomThemeRecords(existing, { ...t, isCustom: true }));
+    }
+  };
+
+  // 1. Cookie backup + localStorage cache (survives extension reloads/new addon installs)
+  const cookieThemes = CookieStore.getChunkedJSON(THEMES_COOKIE_KEY, []);
+  ingest(cookieThemes);
+  const cachedThemes = getCachedUserSettings().customThemes;
+  ingest(cachedThemes);
+
+  // 2. chrome.storage.local
+  let storageThemes = [];
+  if (typeof chrome !== "undefined" && chrome.storage?.local) {
+    try {
+      const data = await chrome.storage.local.get("customThemes");
+      storageThemes = Array.isArray(data?.customThemes) ? data.customThemes : [];
+      ingest(storageThemes);
+    } catch (_) {}
+  }
+
+  // 3. IndexedDB ThemeStudioDB
+  const dbThemes = (await getAllThemesFromDB()).filter((t) => t && t.isCustom);
+  ingest(dbThemes);
+
+  const merged = Array.from(mergedMap.values());
+
+  // Re-hydrate IndexedDB & extension storage if any store fell behind
+  if (merged.length > 0 && dbThemes.length < merged.length) {
+    try {
+      const db = await openDB();
+      await new Promise((resolve) => {
+        const tx = db.transaction(STORE_THEMES, "readwrite");
+        const store = tx.objectStore(STORE_THEMES);
+        for (const rec of merged) {
+          store.put(rec);
+        }
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      });
+    } catch (_) {}
+  }
+  if (merged.length > storageThemes.length && typeof chrome !== "undefined" && chrome.storage?.local) {
+    chrome.storage.local.set({ customThemes: merged }).catch(() => {});
+  }
+
+  return merged;
 }
 
 async function syncCustomThemeCache(allCustom) {
-  updateCachedUserSettings({
-    customThemes: (allCustom || []).map(({ id, name, folder, manifestName, colors, installedExtensionId }) => ({
-      id, name, folder, manifestName, colors, installedExtensionId, isCustom: true
-    }))
-  });
+  const serializable = (allCustom || []).map(({
+    id, name, folder, manifestName, colors, manifestJson, installedExtensionId, isInstalled, updatedAt, _isFallbackColors
+  }) => ({
+    id,
+    name,
+    folder,
+    manifestName,
+    colors,
+    manifestJson: manifestJson || null,
+    installedExtensionId: installedExtensionId || null,
+    isInstalled: Boolean(isInstalled),
+    isCustom: true,
+    updatedAt: updatedAt || new Date().toISOString(),
+    ...(_isFallbackColors ? { _isFallbackColors: true } : {})
+  }));
+
+  // Connect theme.json & saved custom themes cleanly with browser cookies + localStorage cache
+  CookieStore.setChunkedJSON(THEMES_COOKIE_KEY, serializable);
+  updateCachedUserSettings({ customThemes: serializable });
+
   if (typeof chrome !== "undefined" && chrome.storage?.local) {
-    await chrome.storage.local.set({ customThemes: allCustom });
+    await chrome.storage.local.set({ customThemes: serializable });
   }
-  broadcastDBEvent({ type: "CUSTOM_THEMES_CHANGED", customThemes: allCustom });
+  broadcastDBEvent({ type: "CUSTOM_THEMES_CHANGED", customThemes: serializable });
   await syncDatabaseToLocalDevice(false).catch(() => {});
 }
 
@@ -459,8 +696,25 @@ export async function saveCustomThemeInDB(themeObj) {
     .replace(/^-|-$/g, "")
     .slice(0, 32) || "custom-theme";
 
-  const record = {
-    id: themeObj.id || `custom-${slug}-${Date.now()}`,
+  const targetId = themeObj.id || `custom-${slug}-${Date.now()}`;
+
+  // Clear from deleted list if user explicitly re-saves/imports the same ID
+  const deletedIds = await getDeletedCustomThemeIds();
+  if (deletedIds.has(targetId)) {
+    deletedIds.delete(targetId);
+    const nextDeleted = Array.from(deletedIds);
+    CookieStore.setJSON(DELETED_THEMES_COOKIE_KEY, nextDeleted);
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      await chrome.storage.local.set({ deletedCustomThemeIds: nextDeleted }).catch(() => {});
+    }
+  }
+
+  // Merge with any existing record across DB, cookies, and storage so metadata/theme.json is never lost
+  const existingAll = await getCustomThemesFromDB();
+  const existing = existingAll.find((t) => t.id === targetId) || null;
+
+  const baseRecord = {
+    id: targetId,
     folder: themeObj.folder || slug,
     name: themeObj.name || "Custom Theme",
     category: "custom",
@@ -468,10 +722,15 @@ export async function saveCustomThemeInDB(themeObj) {
     iconType: "palette",
     isCustom: true,
     manifestName: themeObj.manifestName || themeObj.name || "Custom Theme",
-    colors: themeObj.colors,
+    installedExtensionId: themeObj.installedExtensionId ?? null,
+    isInstalled: Boolean(themeObj.isInstalled),
+    colors: themeObj.colors || null,
     manifestJson: themeObj.manifestJson || null,
+    _isFallbackColors: Boolean(themeObj._isFallbackColors),
     updatedAt: now
   };
+  const record = mergeCustomThemeRecords(existing, baseRecord);
+  record.updatedAt = now;
 
   await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_THEMES, "readwrite");
@@ -487,6 +746,14 @@ export async function saveCustomThemeInDB(themeObj) {
 
 export async function deleteCustomThemeFromDB(themeId) {
   try {
+    const deletedIds = await getDeletedCustomThemeIds();
+    if (themeId) deletedIds.add(themeId);
+    const nextDeleted = Array.from(deletedIds).slice(-100);
+    CookieStore.setJSON(DELETED_THEMES_COOKIE_KEY, nextDeleted);
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      await chrome.storage.local.set({ deletedCustomThemeIds: nextDeleted }).catch(() => {});
+    }
+
     const db = await openDB();
     await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_THEMES, "readwrite");
@@ -743,23 +1010,112 @@ export async function syncDatabaseToLocalDevice(promptIfNeeded = false) {
     wallpapersIndex: wallpapers.map(({ id, name, mimeType, createdAt }) => ({ id, name, mimeType, createdAt }))
   };
 
-  const dbFile = await dirHandle.getFileHandle("theme-studio-settings.json", { create: true });
-  const writable = await dbFile.createWritable();
-  await writable.write(JSON.stringify(snapshot, null, 2));
-  await writable.close();
+  await writeTextFileInDir(dirHandle, "theme-studio-settings.json", JSON.stringify(snapshot, null, 2));
 
-  // Also write unpacked custom theme folders inside local directory/themes/<folder>/manifest.json
+  // Also write unpacked custom theme folders inside paired themes/<folder>/manifest.json
   if (customThemes.length > 0) {
-    const themesDir = await dirHandle.getDirectoryHandle("themes", { create: true });
+    const themesDir = await getThemesRootDir(dirHandle);
     for (const ct of customThemes) {
       if (!ct.manifestJson || !ct.folder) continue;
       const folderHandle = await themesDir.getDirectoryHandle(ct.folder, { create: true });
-      const mf = await folderHandle.getFileHandle("manifest.json", { create: true });
-      const mw = await mf.createWritable();
-      await mw.write(ct.manifestJson);
-      await mw.close();
+      await writeTextFileInDir(folderHandle, "manifest.json", ct.manifestJson);
     }
   }
+  return true;
+}
+
+/**
+ * Wipe loaded custom themes, stale timers/cookies/cache, and reset Theme Studio cleanly.
+ */
+export async function resetAllStudioData({ themesList = [], clearWallpapers = false } = {}) {
+  CookieStore.removeChunked(THEMES_COOKIE_KEY);
+  [
+    DELETED_THEMES_COOKIE_KEY, "active_theme_id", "active_theme_name", "active_theme_colors",
+    "schedule_enabled", "schedule_interval_minutes", "schedule_interval_hours",
+    "theme_rotation_queue", "custom_theme_draft", "active_gallery_category", "active_nav_tab"
+  ].forEach((k) => CookieStore.remove(k));
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(USER_CACHE_KEY);
+      localStorage.setItem("studio_data_version", STUDIO_DATA_VERSION);
+    }
+  } catch (_) {}
+
+  try {
+    const db = await openDB();
+    const stores = [STORE_THEMES, STORE_STATE, STORE_HISTORY];
+    if (clearWallpapers) stores.push(STORE_WALLPAPERS);
+    await new Promise((resolve) => {
+      const tx = db.transaction(stores, "readwrite");
+      for (const s of stores) tx.objectStore(s).clear();
+      tx.objectStore(STORE_STATE).put({
+        key: KEY_STATE,
+        activeThemeId: "DEFAULT_BROWSER",
+        activeThemeName: "Default Browser",
+        colors: DEFAULT_COLORS,
+        colorMode: "dark",
+        updatedAt: new Date().toISOString()
+      });
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    });
+  } catch (_) {}
+
+  if (themesList.length > 0) {
+    await initThemeDatabase(themesList);
+  }
+
+  if (typeof chrome !== "undefined" && chrome.management) {
+    try {
+      const installed = (await chrome.management.getAll()).filter((t) => t.type === "theme" && t.enabled);
+      for (const ext of installed) {
+        await chrome.management.setEnabled(ext.id, false).catch(() => {});
+      }
+    } catch (_) {}
+  }
+
+  if (typeof chrome !== "undefined" && chrome.storage?.local) {
+    await chrome.storage.local.set({
+      studioDataVersion: STUDIO_DATA_VERSION,
+      activeThemeId: "DEFAULT_BROWSER",
+      activeThemeName: "Default Browser",
+      activeThemeColors: DEFAULT_COLORS,
+      activeExtensionId: null,
+      colorMode: "dark",
+      scheduleEnabled: false,
+      intervalHours: 2,
+      intervalMinutes: 120,
+      themeQueue: [...DEFAULT_ROTATION_QUEUE],
+      currentIndex: 0,
+      customThemes: [],
+      deletedCustomThemeIds: [],
+      syncedLiveThemeIds: [],
+      lastRotationTime: Date.now(),
+      targetRotationTime: Date.now() + 7200000
+    }).catch(() => {});
+  }
+
+  broadcastDBEvent({ type: "CUSTOM_THEMES_CHANGED", customThemes: [] });
+  broadcastDBEvent({ type: "FULL_DATA_RESET" });
+  return true;
+}
+
+export async function ensureFreshDataMigration(themesList = []) {
+  let storedVersion = null;
+  if (typeof chrome !== "undefined" && chrome.storage?.local) {
+    try {
+      const data = await chrome.storage.local.get("studioDataVersion");
+      storedVersion = data?.studioDataVersion || null;
+    } catch (_) {}
+  }
+  if (!storedVersion && typeof localStorage !== "undefined") {
+    try {
+      storedVersion = localStorage.getItem("studio_data_version");
+    } catch (_) {}
+  }
+  if (storedVersion === STUDIO_DATA_VERSION) return false;
+  await resetAllStudioData({ themesList, clearWallpapers: false });
   return true;
 }
 

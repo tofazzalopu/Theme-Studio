@@ -10,6 +10,7 @@ import {
   getCustomThemesFromDB,
   getCachedUserSettings,
   updateCachedUserSettings,
+  syncAllThemesToPairedDir,
   subscribeRealtimeDB,
   LIVE_THEME_NAME
 } from "../liveThemeStore.js";
@@ -266,19 +267,10 @@ if (btnRescan) {
 
 if (btnBackToGallery) {
   btnBackToGallery.addEventListener("click", () => {
-    if (window.opener) {
-      window.close();
-    } else if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.getCurrent) {
-      chrome.tabs.getCurrent((tab) => {
-        if (tab?.id) {
-          chrome.tabs.remove(tab.id);
-        } else {
-          window.location.href = "popup.html";
-        }
-      });
-    } else {
-      window.location.href = "popup.html";
-    }
+    const popupUrl = (typeof chrome !== "undefined" && chrome.runtime?.getURL)
+      ? chrome.runtime.getURL("popup/popup.html")
+      : "popup.html";
+    window.location.href = popupUrl;
   });
 }
 
@@ -366,7 +358,7 @@ subscribeRealtimeDB((ev) => {
   if (ev.type === "COLOR_MODE_CHANGED" || ev.state?.colorMode) {
     applyCompanionColorMode(ev.colorMode || ev.state.colorMode);
   }
-  if (ev.type === "CUSTOM_THEMES_CHANGED" || ev.type === "DB_STATE_CHANGED") {
+  if (ev.type === "CUSTOM_THEMES_CHANGED" || ev.type === "DB_STATE_CHANGED" || ev.type === "FULL_DATA_RESET") {
     refreshCompanionPanel();
   }
 });
@@ -543,6 +535,23 @@ async function renderManifestGrid(query = "") {
 themeSearchInput?.addEventListener("input", (e) => {
   renderManifestGrid(e.target.value);
 });
+
+const btnSyncAllThemes = document.getElementById("btnSyncAllThemes");
+if (btnSyncAllThemes) {
+  btnSyncAllThemes.addEventListener("click", async () => {
+    const customList = await getCustomThemesFromDB();
+    const combined = [...(customList || []), ...THEMES.filter((t) => !t.isDefault)];
+    const res = await syncAllThemesToPairedDir(combined, createThemeManifestJSON);
+    if (res.ok) {
+      showToast(`✓ Synced ${res.count} pre-loaded & custom theme folders into "${res.folderName}"!`);
+      await refreshCompanionPanel();
+    } else if (res.reason === "no_dir") {
+      showToast("Pick your themes folder in Step 1 first so all 53+ themes can sync at once.", 3500);
+    } else {
+      showToast("Please grant folder write permission to sync all theme folders.", 3500);
+    }
+  });
+}
 
 // Continuous check loop (keeps panel in sync with extension/developer state)
 setInterval(() => {

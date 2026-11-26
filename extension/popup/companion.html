@@ -549,7 +549,10 @@
       <section class="window-pane">
         <div class="pane-header">
           <h2 class="pane-title">Included Theme Manifests</h2>
-          <span class="pane-badge" id="totalThemesBadge">extension/themes/</span>
+          <div class="manifest-actions">
+            <button type="button" class="manifest-apply-btn" id="btnSyncAllThemes" title="Write all pre-loaded &amp; custom theme manifests to your paired folder">Sync All Folders</button>
+            <span class="pane-badge" id="totalThemesBadge">extension/themes/</span>
+          </div>
         </div>
 
         <input type="search" class="manifest-search" id="themeSearchInput" placeholder="Search theme manifests &amp; loaded themes (e.g. lilac, aurora, custom)..." autocomplete="off">

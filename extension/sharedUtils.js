@@ -272,6 +272,89 @@ export const CookieStore = {
     try {
       this.set(name, JSON.stringify(value), days);
     } catch (_) { }
+  },
+  removeChunked(name) {
+    this.remove(name);
+    const count = Number(this.get(`${name}__n`) || 0);
+    this.remove(`${name}__n`);
+    for (let i = 0; i < Math.max(count, 16); i++) {
+      if (this.get(`${name}__${i}`) !== null) {
+        this.remove(`${name}__${i}`);
+      }
+    }
+  },
+  setChunked(name, rawValue, days = 365) {
+    try {
+      const str = String(rawValue ?? "");
+      try {
+        if (typeof localStorage !== "undefined") localStorage.setItem(name, str);
+      } catch (_) {}
+      if (typeof document === "undefined") return;
+
+      const prevCount = Number(this.get(`${name}__n`) || 0);
+      const chunks = [];
+      let current = "";
+      for (const ch of str) {
+        const nextEncodedLen = encodeURIComponent(current + ch).length;
+        if (nextEncodedLen > 2800 && current.length > 0) {
+          chunks.push(current);
+          current = ch;
+        } else {
+          current += ch;
+        }
+      }
+      if (current.length > 0 || chunks.length === 0) chunks.push(current);
+
+      document.cookie = `${name}__n=${chunks.length}; max-age=${days * 86400}; path=/; SameSite=Lax`;
+      for (let i = 0; i < chunks.length; i++) {
+        document.cookie = `${name}__${i}=${encodeURIComponent(chunks[i])}; max-age=${days * 86400}; path=/; SameSite=Lax`;
+      }
+      for (let i = chunks.length; i < prevCount; i++) {
+        document.cookie = `${name}__${i}=; max-age=0; path=/; SameSite=Lax`;
+      }
+    } catch (_) {}
+  },
+  getChunked(name) {
+    try {
+      if (typeof document !== "undefined") {
+        const countRaw = this.get(`${name}__n`);
+        const count = Number(countRaw || 0);
+        if (count > 0) {
+          const parts = [];
+          let valid = true;
+          for (let i = 0; i < count; i++) {
+            const match = document.cookie.match(new RegExp(`(?:^|; )${name}__${i}=([^;]*)`));
+            if (!match) {
+              valid = false;
+              break;
+            }
+            parts.push(decodeURIComponent(match[1]));
+          }
+          if (valid) return parts.join("");
+        }
+      }
+    } catch (_) {}
+    try {
+      if (typeof localStorage !== "undefined") {
+        const v = localStorage.getItem(name);
+        if (v !== null) return v;
+      }
+    } catch (_) {}
+    return this.get(name);
+  },
+  setChunkedJSON(name, value, days = 365) {
+    try {
+      this.setChunked(name, JSON.stringify(value), days);
+    } catch (_) {}
+  },
+  getChunkedJSON(name, fallback = null) {
+    const raw = this.getChunked(name);
+    if (!raw) return fallback;
+    try {
+      return JSON.parse(raw);
+    } catch (_) {
+      return fallback;
+    }
   }
 };
 

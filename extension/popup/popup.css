@@ -466,6 +466,7 @@ html[data-theme="dark"] .thumb-moon {
   border-radius: 9px;
   gap: 2px;
   border: 1px solid var(--border-subtle);
+  transition: background 0.32s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.32s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.28s ease;
 }
 
 .segment-btn {
@@ -482,7 +483,7 @@ html[data-theme="dark"] .thumb-moon {
   font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.3s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.22s ease, box-shadow 0.28s ease, transform 0.18s ease;
 }
 
 .segment-btn:hover {
@@ -917,10 +918,6 @@ html[data-theme-synced="true"] .live-sync-bar {
   border: none;
   box-shadow: none;
   color: var(--apple-blue);
-}
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
-  letter-spacing: -0.2px;
 }
 
 /* Coming Soon Label Card */

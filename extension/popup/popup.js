@@ -23,6 +23,11 @@ import {
   getLocalDeviceSpaceStatus,
   requestLocalDeviceSpacePermission,
   syncDatabaseToLocalDevice,
+  writeSingleCustomThemeToPairedDirs,
+  resetAllStudioData,
+  ensureFreshDataMigration,
+  DEFAULT_ROTATION_QUEUE,
+  DEFAULT_COLORS,
   LIVE_THEME_NAME
 } from "../liveThemeStore.js";
 import { THEME_PRESETS, createThemeManifestJSON } from "../themeGenerator.js";
@@ -82,7 +87,9 @@ async function sendExtensionMessage(message) {
         intervalHours: appState.intervalHours,
         intervalMinutes: appState.intervalMinutes || (appState.intervalHours * 60),
         themeQueue: appState.themeQueue,
-        currentIndex: appState.currentIndex || 0
+        currentIndex: appState.currentIndex || 0,
+        lastRotationTime: appState.lastRotationTime,
+        targetRotationTime: appState.targetRotationTime
       };
 
     case "OPEN_EXTENSIONS_PAGE": {
@@ -144,11 +151,52 @@ async function loadCustomThemesIntoApp() {
   }
 }
 
+function resolvePopupTheme(identifier) {
+  if (!identifier || identifier === "DEFAULT_BROWSER") {
+    return GALLERY_PRESETS[0];
+  }
+  return (
+    GALLERY_PRESETS.find((p) => p.id === identifier || p.installedExtensionId === identifier) ||
+    (appState.customThemes || []).find((c) => c.id === identifier || c.installedExtensionId === identifier) ||
+    findThemeMeta(identifier) ||
+    null
+  );
+}
+
+async function performFreshReset(clearWallpapers = false) {
+  await resetAllStudioData({ themesList: THEMES, clearWallpapers });
+  appState.customThemes = [];
+  appState.activeThemeId = "DEFAULT_BROWSER";
+  appState.scheduleEnabled = false;
+  appState.intervalMinutes = 120;
+  appState.intervalHours = 2;
+  appState.currentIndex = 0;
+  appState.themeQueue = [...DEFAULT_ROTATION_QUEUE];
+  currentCategory = "all";
+  document.querySelectorAll(".cat-pill").forEach((b) => b.classList.toggle("active", b.dataset.category === "all"));
+  await loadCustomThemesIntoApp();
+  await refreshState();
+  syncTabBarAndColorMode(null, "dark", true);
+  updateActiveBadge("Default Browser");
+  updateDesignerInputs(DEFAULT_COLORS, "Custom Theme");
+  renderGallery();
+  renderScheduler();
+  if (clearWallpapers) renderWallpaperStudio();
+  updateCountdownDisplay();
+  updateLiveSyncStatus();
+}
+
 // Initialize Popup
 async function start() {
-  // 0. Synchronously apply cached user mode & colors from local browser cache to eliminate flash
+  // 0. Ensure fresh data schema (clears stale custom themes once cleanly when resetting)
+  await ensureFreshDataMigration(THEMES);
+
+  // Synchronously apply cached user mode, scheduler target & colors to eliminate flash/reset
   const cached = getCachedUserSettings();
   if (cached.activeThemeId) appState.activeThemeId = cached.activeThemeId;
+  if (Number(cached.targetRotationTime) > 0) appState.targetRotationTime = Number(cached.targetRotationTime);
+  if (Number(cached.lastRotationTime) > 0) appState.lastRotationTime = Number(cached.lastRotationTime);
+  if (Number.isInteger(cached.currentIndex)) appState.currentIndex = cached.currentIndex;
   if (cached.colorMode || CookieStore.get("app_ui_theme_mode")) {
     const bootMode = cached.colorMode || CookieStore.get("app_ui_theme_mode");
     syncTabBarAndColorMode(cached.colors || CookieStore.getJSON("active_theme_colors"), bootMode, appState.activeThemeId === "DEFAULT_BROWSER");
@@ -217,6 +265,14 @@ async function start() {
     if (ev.type === "CUSTOM_THEMES_CHANGED") {
       loadCustomThemesIntoApp().then(() => renderGallery());
     }
+    if (ev.type === "FULL_DATA_RESET") {
+      loadCustomThemesIntoApp().then(() => refreshState()).then(() => {
+        renderGallery();
+        renderScheduler();
+        renderWallpaperStudio();
+        updateCountdownDisplay();
+      });
+    }
   });
 
   // Listen for live Chromium / Edge theme management & rotation events
@@ -278,6 +334,14 @@ async function start() {
       }
       if (changes.targetRotationTime?.newValue) {
         appState.targetRotationTime = changes.targetRotationTime.newValue;
+        CookieStore.set("schedule_target_time", String(appState.targetRotationTime));
+        updateCachedUserSettings({ targetRotationTime: appState.targetRotationTime });
+        schedDirty = true;
+      }
+      if (Number.isInteger(changes.currentIndex?.newValue)) {
+        appState.currentIndex = changes.currentIndex.newValue;
+        CookieStore.set("schedule_current_index", String(appState.currentIndex));
+        updateCachedUserSettings({ currentIndex: appState.currentIndex });
         schedDirty = true;
       }
       if (schedDirty) {
@@ -285,7 +349,10 @@ async function start() {
         updateCountdownDisplay();
       }
       if (changes.activeThemeId?.newValue) {
-        refreshState().then(() => renderGallery());
+        refreshState().then(() => {
+          renderGallery();
+          renderScheduler();
+        });
       }
     });
   }
@@ -324,6 +391,15 @@ async function refreshState() {
     appState.scheduleEnabled = cookieScheduleEnabled === "true";
   }
 
+  const cookieTargetTime = Number(CookieStore.get("schedule_target_time") || getCachedUserSettings().targetRotationTime || 0);
+  if (cookieTargetTime > 0) {
+    appState.targetRotationTime = cookieTargetTime;
+  }
+  const cookieIdx = CookieStore.get("schedule_current_index");
+  if (cookieIdx !== null && Number.isInteger(Number(cookieIdx))) {
+    appState.currentIndex = Number(cookieIdx);
+  }
+
   try {
     const response = await sendExtensionMessage({ type: "GET_STATE" });
     if (response && response.success) {
@@ -342,9 +418,22 @@ async function refreshState() {
         ? Boolean(response.scheduleEnabled)
         : (cookieScheduleEnabled !== null ? cookieScheduleEnabled === "true" : Boolean(response.scheduleEnabled));
 
-      const resolvedQueue = hasChromeRuntime && Array.isArray(response.themeQueue) && response.themeQueue.length > 0
-        ? response.themeQueue
+      let resolvedQueue = hasChromeRuntime && Array.isArray(response.themeQueue) && response.themeQueue.length > 0
+        ? [...response.themeQueue]
         : (cookieQueue || response.themeQueue || appState.themeQueue);
+
+      const installedSet = new Set((response.installedThemes || []).map((t) => t.id));
+      const customSet = new Set(Array.from(existingCustomMap.keys()));
+      // Remove orphaned 32-char extension IDs no longer installed/known
+      resolvedQueue = resolvedQueue.filter((qId) => {
+        if (!/^[a-p]{32}$/.test(String(qId))) return true;
+        return installedSet.has(qId) || customSet.has(qId);
+      });
+      if (resolvedQueue.length === 0) resolvedQueue = [...DEFAULT_ROTATION_QUEUE];
+
+      const preservedTarget = hasChromeRuntime
+        ? (Number(response.targetRotationTime) || cookieTargetTime || (Date.now() + resolvedMinutes * 60000))
+        : (cookieTargetTime > 0 ? cookieTargetTime : (Number(response.targetRotationTime) || (Date.now() + resolvedMinutes * 60000)));
 
       appState = {
         ...appState,
@@ -357,9 +446,9 @@ async function refreshState() {
         intervalMinutes: resolvedMinutes,
         intervalHours: resolvedMinutes / 60,
         scheduleEnabled: resolvedEnabled,
-        currentIndex: response.currentIndex ?? appState.currentIndex,
-        lastRotationTime: response.lastRotationTime || Date.now(),
-        targetRotationTime: response.targetRotationTime || (Date.now() + resolvedMinutes * 60000),
+        currentIndex: hasChromeRuntime ? (response.currentIndex ?? appState.currentIndex) : (appState.currentIndex ?? response.currentIndex ?? 0),
+        lastRotationTime: response.lastRotationTime || appState.lastRotationTime || Date.now(),
+        targetRotationTime: preservedTarget,
         devMode: CookieStore.get("dev_mode_enabled") === "true" || false,
         hasLoadedInitialState: true
       };
@@ -379,9 +468,9 @@ async function refreshState() {
       let enabledThemeEntry = null;
       if (Array.isArray(appState.installedThemes)) {
         appState.installedThemes.forEach(t => {
-          const isRealEnabled = Boolean(t.enabled && !t.name.includes("Live Companion"));
+          const isRealEnabled = Boolean(t.enabled && !t.isLiveCompanion && !t.name.includes("Live Companion"));
           let matchedPreset = GALLERY_PRESETS.find(p => p.id === t.presetId);
-          if (!matchedPreset) {
+          if (!matchedPreset && !t.isLiveCompanion && !t.name.includes("Live Companion")) {
             matchedPreset = GALLERY_PRESETS.find(p => {
               if (p.id === "DEFAULT_BROWSER") return false;
               if (p.manifestName.toLowerCase() === t.name.toLowerCase()) return true;
@@ -395,7 +484,7 @@ async function refreshState() {
             matchedPreset.installedExtensionId = t.id;
             matchedPreset.isEnabled = Boolean(t.enabled);
             if (isRealEnabled) enabledThemeEntry = matchedPreset;
-          } else {
+          } else if (!t.isLiveCompanion && !t.name.includes("Live Companion")) {
             const matchedCustom = (appState.customThemes || []).find(
               c => c.id === t.presetId || c.installedExtensionId === t.id || normalizeStr(c.manifestName || c.name) === normalizeStr(t.name)
             );
@@ -411,13 +500,12 @@ async function refreshState() {
         });
       }
 
-      if (hasChromeRuntime && enabledThemeEntry && enabledThemeEntry.id) {
+      if (hasChromeRuntime && (!appState.activeThemeId || appState.activeThemeId === "DEFAULT_BROWSER") && enabledThemeEntry?.id && !response.activeThemeId) {
         appState.activeThemeId = enabledThemeEntry.id;
       }
 
       // Sync active theme badge, cookies, and local cache to match authoritative state
-      const currentActive = GALLERY_PRESETS.find(p => p.id === appState.activeThemeId) ||
-        (appState.customThemes || []).find(c => c.id === appState.activeThemeId) ||
+      const currentActive = resolvePopupTheme(appState.activeThemeId) ||
         (appState.installedThemes || []).find(t => t.id === appState.activeThemeId || t.presetId === appState.activeThemeId);
 
       const activeDisplayName = appState.activeThemeId === "DEFAULT_BROWSER"
@@ -431,6 +519,8 @@ async function refreshState() {
       CookieStore.set("schedule_interval_minutes", appState.intervalMinutes);
       CookieStore.set("schedule_interval_hours", appState.intervalHours);
       CookieStore.set("schedule_enabled", appState.scheduleEnabled ? "true" : "false");
+      CookieStore.set("schedule_target_time", String(appState.targetRotationTime));
+      CookieStore.set("schedule_current_index", String(appState.currentIndex || 0));
       updateCachedUserSettings({
         activeThemeId: appState.activeThemeId,
         activeThemeName: activeDisplayName,
@@ -438,6 +528,9 @@ async function refreshState() {
         scheduleEnabled: appState.scheduleEnabled,
         intervalMinutes: appState.intervalMinutes,
         intervalHours: appState.intervalHours,
+        targetRotationTime: appState.targetRotationTime,
+        lastRotationTime: appState.lastRotationTime,
+        currentIndex: appState.currentIndex || 0,
         themeQueue: appState.themeQueue,
         devMode: appState.devMode
       });
@@ -830,20 +923,12 @@ async function handleThemeSelect(cardData) {
       updateLiveSyncStatus();
       return;
     } else if (res && res.status === "requires_unpacked_load") {
-      const isRealExtension = typeof chrome !== "undefined" && (chrome.management || chrome.runtime?.id);
-      if (isRealExtension) {
-        appState.activeThemeId = cardData.id;
-        updateActiveBadge(cardData.name);
-        renderGallery();
-        openEdgeInstallerModal(cardData);
-      } else {
-        appState.activeThemeId = cardData.id;
-        updateActiveBadge(cardData.name);
-        renderGallery();
-        showToast(`✓ ${cardData.name} saved to ThemeStudioDB!`);
-      }
+      appState.activeThemeId = cardData.id;
+      updateActiveBadge(cardData.name);
+      renderGallery();
       if (cardData.colors) updateDesignerInputs(cardData.colors, cardData.name);
       updateLiveSyncStatus();
+      showToast(`✓ ${cardData.name} applied to Studio & New Tab!`);
       return;
     }
   } catch (err) {
@@ -1404,11 +1489,20 @@ function setupWallpaperStudio() {
   }
 }
 
+function normalizeAllowedIntervalMinutes(mins) {
+  const allowed = [15, 30, 45, 60, 120, 240, 1440];
+  const n = Math.round(Number(mins) || 120);
+  if (allowed.includes(n)) return n;
+  return n < 15 ? 15 : 120;
+}
+
 function syncSchedulerControlStates() {
   const toggle = document.getElementById("scheduleToggle");
   if (toggle) toggle.checked = Boolean(appState.scheduleEnabled);
 
-  const currentMin = Math.round(Number(appState.intervalMinutes) || (Number(appState.intervalHours) * 60) || 120);
+  const currentMin = normalizeAllowedIntervalMinutes(appState.intervalMinutes || (Number(appState.intervalHours) * 60));
+  appState.intervalMinutes = currentMin;
+  appState.intervalHours = currentMin / 60;
   const chips = document.querySelectorAll("#intervalChips .chip-btn");
   chips.forEach(c => {
     const chipMin = c.dataset.minutes ? Number(c.dataset.minutes) : (Number(c.dataset.hours) * 60);
@@ -1449,6 +1543,10 @@ function setupSchedulerControls() {
         intervalMinutes: mins
       });
       if (resp?.targetRotationTime) appState.targetRotationTime = resp.targetRotationTime;
+      if (appState.targetRotationTime) {
+        CookieStore.set("schedule_target_time", String(appState.targetRotationTime));
+        updateCachedUserSettings({ targetRotationTime: appState.targetRotationTime, lastRotationTime: appState.lastRotationTime });
+      }
       updateCountdownDisplay();
       const label = mins >= 60 ? `${mins / 60}h` : `${mins}m`;
       showToast(isEnabled ? `✓ Auto-cycle timer started (${label})` : "Auto-cycle timer paused");
@@ -1482,6 +1580,8 @@ function setupSchedulerControls() {
         intervalMinutes: minutes
       });
       if (resp?.targetRotationTime) appState.targetRotationTime = resp.targetRotationTime;
+      CookieStore.set("schedule_target_time", String(appState.targetRotationTime));
+      updateCachedUserSettings({ targetRotationTime: appState.targetRotationTime, lastRotationTime: appState.lastRotationTime });
 
       showToast(`Interval set to ${chip.textContent.trim()}! Countdown reset.`);
       updateCountdownDisplay();
@@ -1564,13 +1664,14 @@ function setupAddScreenControls() {
       select.appendChild(grpCustom);
     }
 
-    // Group 4: Installed Themes
-    if (appState.installedThemes && appState.installedThemes.length > 0) {
+    // Group 4: Installed Themes (exclude Live Companion)
+    const standaloneInstalled = (appState.installedThemes || []).filter((t) => !t.isLiveCompanion && !t.name?.includes("Live Companion"));
+    if (standaloneInstalled.length > 0) {
       const grpInstalled = document.createElement("optgroup");
       grpInstalled.label = "Installed Chromium Themes";
-      appState.installedThemes.forEach(t => {
+      standaloneInstalled.forEach(t => {
         const opt = document.createElement("option");
-        opt.value = t.id;
+        opt.value = t.presetId || t.id;
         opt.textContent = t.name;
         grpInstalled.appendChild(opt);
       });
@@ -1650,13 +1751,22 @@ function renderScheduler() {
 
   const queue = Array.isArray(appState.themeQueue) && appState.themeQueue.length > 0
     ? appState.themeQueue
-    : ["DEFAULT_BROWSER", "preset-aurora", "preset-midsummer", "preset-nebula"];
+    : [...DEFAULT_ROTATION_QUEUE];
 
   if (queueCount) queueCount.textContent = `${queue.length} ${queue.length === 1 ? "Theme" : "Themes"}`;
 
-  const currentIdx = appState.currentIndex % queue.length;
+  // Sync LIVE indicator strictly to the actual activeThemeId when present in queue
+  const matchedLiveIdx = queue.findIndex((tid) => {
+    if (tid === appState.activeThemeId) return true;
+    const resolved = resolvePopupTheme(tid);
+    return Boolean(resolved && resolved.id === appState.activeThemeId);
+  });
+  if (matchedLiveIdx >= 0) {
+    appState.currentIndex = matchedLiveIdx;
+  }
+
   const pillsHtml = queue.map((themeId, i) => {
-    const isCurrentActive = i === currentIdx;
+    const isCurrentActive = i === matchedLiveIdx;
     const meta = getQueueThemeMeta(themeId);
     const swatchStyle = `background: linear-gradient(135deg, ${meta.frame} 0%, ${meta.toolbar} 100%);`;
     return `
@@ -1672,26 +1782,27 @@ function renderScheduler() {
 
   queueList.innerHTML = pillsHtml;
 
-  // Click pill to activate that theme immediately
+  // Click pill to activate that theme immediately (persists queue index BEFORE applying so storage listeners never revert it)
   queueList.querySelectorAll(".queue-pill").forEach(pill => {
     pill.addEventListener("click", async () => {
       const idx = Number(pill.dataset.index);
       const targetId = queue[idx];
       if (!targetId) return;
       appState.currentIndex = idx;
-      const cardData = GALLERY_PRESETS.find(p => p.id === targetId) ||
-        (appState.customThemes || []).find(t => t.id === targetId) || {
+      CookieStore.set("schedule_current_index", String(idx));
+      updateCachedUserSettings({ currentIndex: idx });
+      await sendExtensionMessage({
+        type: "UPDATE_QUEUE",
+        themeQueue: queue,
+        currentIndex: idx
+      });
+      const cardData = resolvePopupTheme(targetId) || {
         id: targetId,
         name: getQueueThemeMeta(targetId).name
       };
       await handleThemeSelect(cardData);
       renderScheduler();
       updateCountdownDisplay();
-      await sendExtensionMessage({
-        type: "UPDATE_QUEUE",
-        themeQueue: queue,
-        currentIndex: idx
-      });
     });
   });
 
@@ -1761,6 +1872,9 @@ async function addDesignerThemeToStudio(applyToBrowser = true) {
     CookieStore.setJSON("theme_rotation_queue", queue);
     await sendExtensionMessage({ type: "UPDATE_QUEUE", themeQueue: queue });
   }
+
+  // Single-upload sync: automatically write manifest.json to any authorized paired folder
+  await writeSingleCustomThemeToPairedDirs(saved).catch(() => {});
 
   await loadCustomThemesIntoApp();
   renderGallery();
@@ -2862,18 +2976,24 @@ function setupDashboardSidebar() {
     });
   }
 
-  // Restore Default from Dashboard
+  // Restore Default from Dashboard (shared flow)
   const btnReset = document.getElementById("btnDashResetDefault");
   if (btnReset) {
     btnReset.addEventListener("click", async () => {
       triggerSpinAnimation(btnReset);
-      await applyNativeTabBarTheme("DEFAULT_BROWSER");
-      appState.activeThemeId = "DEFAULT_BROWSER";
-      syncTabBarAndColorMode(null, null, true);
-      updateActiveBadge("Default Browser");
-      renderGallery();
-      showToast("Restored Browser Default Appearance");
+      await handleThemeSelect({ id: "DEFAULT_BROWSER", name: "Default Browser", colors: DEFAULT_COLORS });
       updateDashboardView();
+    });
+  }
+
+  // Fresh Reset (wipe loaded custom themes & reset studio to beginning)
+  const btnFreshReset = document.getElementById("btnDashFreshReset");
+  if (btnFreshReset) {
+    btnFreshReset.addEventListener("click", async () => {
+      triggerSpinAnimation(btnFreshReset);
+      await performFreshReset(false);
+      closeSidebar();
+      showToast("✓ Studio refreshed — loaded custom themes cleared & reset to default!");
     });
   }
 
@@ -2890,9 +3010,7 @@ function setupDashboardSidebar() {
   const btnZip = document.getElementById("btnDashDownloadZip");
   if (btnZip) {
     btnZip.addEventListener("click", () => {
-      const activeObj = GALLERY_PRESETS.find((p) => p.id === appState.activeThemeId) ||
-        (appState.customThemes || []).find((p) => p.id === appState.activeThemeId) ||
-        GALLERY_PRESETS.find((p) => p.id === "preset-aurora");
+      const activeObj = resolvePopupTheme(appState.activeThemeId) || resolvePopupTheme("preset-aurora");
       if (activeObj) {
         downloadSingleThemeZip({
           folder: activeObj.folder || "custom-theme",
@@ -3025,15 +3143,20 @@ function updateCountdownDisplay() {
     card.classList.remove("is-paused");
     card.classList.add("is-active");
   }
-  const mins = appState.intervalMinutes || 120;
+  const mins = normalizeAllowedIntervalMinutes(appState.intervalMinutes || 120);
+  appState.intervalMinutes = mins;
   const intervalText = mins >= 60 ? `${mins / 60}h` : `${mins}m`;
   if (pulseDot) pulseDot.style.animation = "pulseCountdown 1.4s infinite";
   if (badge) badge.textContent = `Auto-Cycle Active (${intervalText})`;
   if (subtext) subtext.textContent = "Until next theme swap";
 
   const now = Date.now();
-  const target = appState.targetRotationTime || (now + 7200000);
-  const totalDurationMs = (appState.intervalMinutes || 120) * 60 * 1000;
+  const totalDurationMs = mins * 60 * 1000;
+  let target = appState.targetRotationTime || (now + totalDurationMs);
+  if (target - now > totalDurationMs) {
+    target = now + totalDurationMs;
+    appState.targetRotationTime = target;
+  }
   const remainingMs = Math.max(0, target - now);
   const remainingSecs = remainingMs / 1000;
 
@@ -3072,7 +3195,7 @@ async function advanceQueueTheme() {
 
     const queue = Array.isArray(appState.themeQueue) && appState.themeQueue.length > 0
       ? appState.themeQueue
-      : ["DEFAULT_BROWSER", "preset-aurora", "preset-midsummer", "preset-nebula"];
+      : [...DEFAULT_ROTATION_QUEUE];
 
     const nextIndex = (appState.currentIndex + 1) % queue.length;
     const nextThemeId = queue[nextIndex];
@@ -3080,22 +3203,28 @@ async function advanceQueueTheme() {
     appState.currentIndex = nextIndex;
     appState.lastRotationTime = Date.now();
     appState.targetRotationTime = Date.now() + ((appState.intervalMinutes || 120) * 60 * 1000);
-
-    const cardData = GALLERY_PRESETS.find(p => p.id === nextThemeId) ||
-      (appState.customThemes || []).find(t => t.id === nextThemeId) || {
-        id: nextThemeId,
-        name: nextThemeId
-      };
-
-    await handleThemeSelect(cardData);
-    renderScheduler();
-    updateCountdownDisplay();
+    CookieStore.set("schedule_current_index", String(nextIndex));
+    CookieStore.set("schedule_target_time", String(appState.targetRotationTime));
+    updateCachedUserSettings({
+      currentIndex: nextIndex,
+      lastRotationTime: appState.lastRotationTime,
+      targetRotationTime: appState.targetRotationTime
+    });
 
     await sendExtensionMessage({
       type: "UPDATE_QUEUE",
       themeQueue: queue,
       currentIndex: nextIndex
     });
+
+    const cardData = resolvePopupTheme(nextThemeId) || {
+      id: nextThemeId,
+      name: getQueueThemeMeta(nextThemeId).name
+    };
+
+    await handleThemeSelect(cardData);
+    renderScheduler();
+    updateCountdownDisplay();
   } finally {
     isRotating = false;
   }
@@ -3120,6 +3249,8 @@ function setupCountdownTimer() {
       triggerSpinAnimation(btnReset);
       appState.lastRotationTime = Date.now();
       appState.targetRotationTime = Date.now() + ((appState.intervalMinutes || 120) * 60 * 1000);
+      CookieStore.set("schedule_target_time", String(appState.targetRotationTime));
+      updateCachedUserSettings({ targetRotationTime: appState.targetRotationTime, lastRotationTime: appState.lastRotationTime });
       await sendExtensionMessage({ type: "RESET_QUEUE_TIMER" });
       showToast("Countdown timer reset!");
       updateCountdownDisplay();

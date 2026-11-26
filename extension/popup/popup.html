@@ -288,9 +288,9 @@
               <div class="label-desc">Rotate automatically via Chrome Alarms</div>
             </div>
             <div class="chip-selector scheduler-interval-group" id="intervalChips">
-              <button type="button" class="chip-btn" data-minutes="1">1m</button>
-              <button type="button" class="chip-btn" data-minutes="5">5m</button>
               <button type="button" class="chip-btn" data-minutes="15">15m</button>
+              <button type="button" class="chip-btn" data-minutes="30">30m</button>
+              <button type="button" class="chip-btn" data-minutes="45">45m</button>
               <button type="button" class="chip-btn" data-hours="1">1h</button>
               <button type="button" class="chip-btn active" data-hours="2">2h</button>
               <button type="button" class="chip-btn" data-hours="4">4h</button>
@@ -336,7 +336,7 @@
             <span class="badge-subtle hidden" id="importedManifestBadge">Manifest Loaded</span>
           </div>
           <p class="label-desc mb-8">
-            Drop any Chromium <code>manifest.json</code>, theme <code>.zip</code>, or unpacked folder to populate Live Theme Designer, add it to Studio, and install via Developer Panel.
+            Drop any Chromium <code>manifest.json</code>, theme <code>.zip</code>, or unpacked folder — auto-adds to My Studio, syncs your paired folder, and applies in one step.
           </p>
 
           <label class="apple-dropzone" for="themeFileInput" id="dropZone">
@@ -635,6 +635,7 @@
           </div>
           <div class="dash-actions-row">
             <button type="button" class="apple-button secondary small" id="btnDashResetDefault">Reset Default</button>
+            <button type="button" class="apple-button secondary small" id="btnDashFreshReset" title="Clear loaded custom themes &amp; refresh studio data">Fresh Reset</button>
             <button type="button" class="apple-button secondary small" id="btnDashDownloadZip">Download .zip</button>
           </div>
         </div>
